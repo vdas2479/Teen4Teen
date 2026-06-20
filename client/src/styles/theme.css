@@ -1,0 +1,228 @@
+:root {
+  /* ── Core palette — soft, warm, playful ──────────────────────────── */
+  --pink: #EC4899;
+  --pink-deep: #DB2777;
+  --purple: #9333EA;
+  --purple-deep: #7E22CE;
+  --lavender: #E9D5FF;
+  --lavender-soft: #F5ECFF;
+  --blush: #FDE7F3;
+  --cream: #FFF9F4;
+  --amber: #D97706;
+  --amber-bg: #FEF3C7;
+  --mint-bg: #E6F4EA;
+  --mint-text: #1E7C3F;
+
+  --ink: #241433;
+  --gray: #6B6275;
+  --gray-soft: #8B8294;
+  --white: #FFFFFF;
+
+  --gradient-primary: linear-gradient(135deg, var(--pink) 0%, var(--purple) 100%);
+  --gradient-soft-bg: linear-gradient(160deg, #FFF1F7 0%, #FBF2FF 45%, #F6EEFF 100%);
+
+  --font-display: 'Fredoka', 'Plus Jakarta Sans', sans-serif;
+  --font-body: 'Plus Jakarta Sans', sans-serif;
+
+  --radius-lg: 28px;
+  --radius-md: 18px;
+  --radius-sm: 12px;
+  --shadow-soft: 0 10px 30px rgba(147, 51, 234, 0.08), 0 2px 8px rgba(236, 72, 153, 0.06);
+  --shadow-card: 0 8px 24px rgba(147, 51, 234, 0.07);
+}
+
+* { box-sizing: border-box; }
+
+html, body, #root { margin: 0; padding: 0; min-height: 100%; }
+
+body {
+  font-family: var(--font-body);
+  color: var(--ink);
+  line-height: 1.65;
+  background:
+    repeating-linear-gradient(0deg, rgba(147,51,234,0.035) 0px, rgba(147,51,234,0.035) 1px, transparent 1px, transparent 42px),
+    repeating-linear-gradient(90deg, rgba(147,51,234,0.035) 0px, rgba(147,51,234,0.035) 1px, transparent 1px, transparent 42px),
+    var(--gradient-soft-bg);
+  background-attachment: fixed;
+  min-height: 100vh;
+}
+
+h1, h2, h3, h4 {
+  font-family: var(--font-display);
+  color: var(--ink);
+  margin: 0 0 0.5em 0;
+  font-weight: 600;
+  line-height: 1.15;
+  letter-spacing: -0.01em;
+}
+
+p { color: var(--gray); }
+
+a { color: var(--pink-deep); text-decoration: none; font-weight: 500; }
+a:hover { text-decoration: underline; }
+
+button { font-family: var(--font-body); cursor: pointer; }
+
+/* ── Buttons ──────────────────────────────────────────────────────── */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4em;
+  padding: 0.75em 1.7em;
+  border-radius: 999px;
+  border: none;
+  font-weight: 700;
+  font-size: 0.95rem;
+  font-family: var(--font-body);
+  transition: transform 0.15s ease, box-shadow 0.15s ease, opacity 0.15s ease;
+  white-space: nowrap;
+}
+.btn:focus-visible { outline: 3px solid var(--amber); outline-offset: 2px; }
+.btn-primary {
+  background: var(--gradient-primary);
+  color: white;
+  box-shadow: 0 8px 20px rgba(219, 39, 119, 0.28);
+}
+.btn-primary:hover { transform: translateY(-1px); box-shadow: 0 10px 26px rgba(219, 39, 119, 0.36); }
+.btn-secondary { background: white; color: var(--purple-deep); border: 1.5px solid var(--lavender); box-shadow: var(--shadow-card); }
+.btn-secondary:hover { transform: translateY(-1px); background: var(--lavender-soft); }
+.btn-gold { background: linear-gradient(135deg, #FBBF24, #F59E0B); color: white; box-shadow: 0 6px 16px rgba(245, 158, 11, 0.3); }
+.btn-gold:hover { transform: translateY(-1px); }
+.btn-ghost { background: transparent; color: var(--purple-deep); border: 1.5px solid var(--lavender); }
+.btn-ghost:hover { background: var(--lavender-soft); }
+button[disabled] { opacity: 0.5; cursor: not-allowed; transform: none !important; }
+
+/* ── Layout ───────────────────────────────────────────────────────── */
+.page { max-width: 1080px; margin: 0 auto; padding: 2.5rem 1.5rem 5rem; position: relative; }
+.page-narrow { max-width: 760px; margin: 0 auto; padding: 2.5rem 1.5rem 5rem; position: relative; }
+
+/* ── Cards ────────────────────────────────────────────────────────── */
+.card {
+  background: white;
+  border: 1px solid #F2E8FF;
+  border-radius: var(--radius-md);
+  padding: 1.6rem;
+  box-shadow: var(--shadow-card);
+}
+
+/* ── Eyebrow label (small caps section tag) ──────────────────────── */
+.eyebrow {
+  display: inline-block;
+  font-family: var(--font-body);
+  font-size: 0.78rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--amber);
+  margin-bottom: 0.6rem;
+}
+
+/* ── Pill chip (badge above a hero, post tags, etc.) ─────────────── */
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4em;
+  font-size: 0.85rem;
+  font-weight: 600;
+  padding: 0.5em 1.1em;
+  border-radius: 999px;
+  background: var(--blush);
+  color: var(--pink-deep);
+  border: 1px solid #FBCFE8;
+}
+
+.tag {
+  display: inline-block;
+  font-size: 0.75rem;
+  font-weight: 700;
+  padding: 0.3em 0.85em;
+  border-radius: 999px;
+  background: var(--lavender-soft);
+  color: var(--purple-deep);
+}
+.badge-seeker { background: var(--blush); color: var(--pink-deep); }
+.badge-verified { background: var(--lavender-soft); color: var(--purple-deep); }
+.badge-young { background: var(--amber-bg); color: #8a6d00; }
+
+/* ── Form fields ──────────────────────────────────────────────────── */
+.field { margin-bottom: 1.2rem; display: flex; flex-direction: column; gap: 0.4rem; }
+.field label { font-weight: 700; font-size: 0.88rem; color: var(--ink); }
+.field input, .field select, .field textarea {
+  font-family: var(--font-body);
+  font-size: 1rem;
+  padding: 0.75em 1em;
+  border-radius: var(--radius-sm);
+  border: 1.5px solid #ECDCFB;
+  background: #FDFBFF;
+  color: var(--ink);
+}
+.field input:focus, .field select:focus, .field textarea:focus {
+  outline: none;
+  border-color: var(--pink);
+  box-shadow: 0 0 0 4px rgba(236, 72, 153, 0.12);
+  background: white;
+}
+.field-hint { font-size: 0.82rem; color: var(--gray-soft); }
+
+/* Selectable option card (used for radio-style choices) */
+.choice-card {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  padding: 0.85em 1.1em;
+  border-radius: var(--radius-sm);
+  border: 1.5px solid #ECDCFB;
+  background: #FDFBFF;
+  cursor: pointer;
+  font-size: 0.92rem;
+  font-weight: 500;
+  margin-bottom: 0.6rem;
+  transition: background 0.15s ease, border-color 0.15s ease;
+}
+.choice-card.selected { background: var(--blush); border-color: #F9A8D4; }
+
+/* ── Soft note / callout boxes ────────────────────────────────────── */
+.note-soft {
+  background: var(--amber-bg);
+  border-radius: var(--radius-md);
+  padding: 1.1rem 1.3rem;
+  font-size: 0.92rem;
+  color: #6B5300;
+  border: 1px solid #FDE49A;
+}
+.note-soft strong { color: #5C4600; }
+
+.note-lock {
+  background: var(--amber-bg);
+  border-radius: var(--radius-md);
+  padding: 1.4rem;
+  border: 1px solid #FDE49A;
+}
+
+.crisis-line { font-size: 0.88rem; color: var(--pink-deep); font-weight: 700; }
+
+/* ── Decorative blobs (purely visual, behind content) ────────────── */
+.blob {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(50px);
+  opacity: 0.5;
+  z-index: 0;
+  pointer-events: none;
+}
+.blob-pink { background: radial-gradient(circle, #FBCFE8, transparent 70%); }
+.blob-purple { background: radial-gradient(circle, #E9D5FF, transparent 70%); }
+.blob-gold { background: radial-gradient(circle, #FDE68A, transparent 70%); }
+
+/* ── Icon circle (used next to small section labels) ─────────────── */
+.icon-circle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.4rem;
+  height: 2.4rem;
+  border-radius: 50%;
+  background: var(--lavender-soft);
+  font-size: 1.2rem;
+  flex-shrink: 0;
+}
