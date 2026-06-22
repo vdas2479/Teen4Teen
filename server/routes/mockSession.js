@@ -1,9 +1,9 @@
 import express from "express";
 import * as db from "../db.js";
+import { asyncHandler } from "../asyncHandler.js";
 
 const router = express.Router();
 
-// ── AI persona prompts (per spec section 6.3) ──────────────────────────
 const ADULT_PERSONA = `You are role-playing as "Alex," a young woman from a low-income background
 who is reaching out for support for the first time. You feel anxious and ashamed about
 talking about your feelings. You are initially guarded, give short or deflecting answers,
@@ -22,7 +22,6 @@ function buildPrompt(tier) {
   return tier === "Young" ? YOUNG_PERSONA : ADULT_PERSONA;
 }
 
-// Scripted fallback used when no GEMINI_API_KEY is set, so the demo still works.
 const SCRIPTED_FALLBACK = [
   "hey",
   "I don't really know why I'm here honestly",
@@ -30,18 +29,17 @@ const SCRIPTED_FALLBACK = [
   "...okay maybe it is kind of a big deal. things have just been a lot lately",
 ];
 
-router.post("/start", async (req, res) => {
+router.post("/start", asyncHandler(async (req, res) => {
   const { volunteer_id, tier } = req.body;
   res.json({
     session_id: volunteer_id,
     notice: "This is a simulated conversation with an AI designed to reflect real interactions on Teen4Teen. Your responses will be reviewed by an admin as part of your application. Please engage as you would in a real session — honestly and with care. The session typically takes 10–15 minutes.",
     opening_message: "hey"
   });
-});
+}));
 
-router.post("/message", async (req, res) => {
+router.post("/message", asyncHandler(async (req, res) => {
   const { tier, history, message } = req.body;
-  // history: [{ role: "volunteer" | "persona", content: "..." }]
 
   if (!process.env.GEMINI_API_KEY) {
     const turnIndex = (history || []).filter(h => h.role === "persona").length;
@@ -76,10 +74,9 @@ router.post("/message", async (req, res) => {
   } catch (err) {
     res.status(500).json({ error: "AI session failed to respond.", details: err.message });
   }
-});
+}));
 
-// Save the finished transcript against the volunteer's onboarding record
-router.post("/:volunteerId/complete", async (req, res) => {
+router.post("/:volunteerId/complete", asyncHandler(async (req, res) => {
   const { transcript } = req.body;
   const rows = await db.list("onboarding_progress", { volunteer_id: req.params.volunteerId });
   if (!rows[0]) return res.status(404).json({ error: "No onboarding record found." });
@@ -89,6 +86,6 @@ router.post("/:volunteerId/complete", async (req, res) => {
   });
   await db.update("volunteers", req.params.volunteerId, { status: "In Review" });
   res.json({ progress: updated });
-});
+}));
 
 export default router;

@@ -1,18 +1,15 @@
 import express from "express";
 import * as db from "../db.js";
+import { asyncHandler } from "../asyncHandler.js";
 
 const router = express.Router();
 
-// Get all visible posts with their replies
-router.get("/posts", async (req, res) => {
+router.get("/posts", asyncHandler(async (req, res) => {
   const posts = await db.list("community_posts");
   res.json({ posts: posts.filter(p => !p.is_hidden) });
-});
+}));
 
-// Seeker or Verified/Young Responder creates a post.
-// tier_label is trusted from the logged-in session in a real build —
-// for the prototype it's passed in directly.
-router.post("/posts", async (req, res) => {
+router.post("/posts", asyncHandler(async (req, res) => {
   const { display_name, tier_label, content, country, topic } = req.body;
   if (!display_name || !content) {
     return res.status(400).json({ error: "Display name and content are required." });
@@ -30,12 +27,9 @@ router.post("/posts", async (req, res) => {
     replies: []
   });
   res.status(201).json({ post });
-});
+}));
 
-// Reply to a thread — Seekers CAN give practical advice here, not just reactions,
-// per the confirmed spec decision. They're simply labeled "Seeker" so others
-// know the source.
-router.post("/posts/:postId/replies", async (req, res) => {
+router.post("/posts/:postId/replies", asyncHandler(async (req, res) => {
   const { display_name, tier_label, content } = req.body;
   const post = await db.getOne("community_posts", req.params.postId);
   if (!post) return res.status(404).json({ error: "Post not found." });
@@ -52,10 +46,9 @@ router.post("/posts/:postId/replies", async (req, res) => {
   const replies = [...(post.replies || []), reply];
   const updated = await db.update("community_posts", post.id, { replies });
   res.status(201).json({ post: updated });
-});
+}));
 
-// Flag a post or reply (Seekers and visitors can do this — no auto-removal)
-router.post("/posts/:postId/flag", async (req, res) => {
+router.post("/posts/:postId/flag", asyncHandler(async (req, res) => {
   const { replyId } = req.body;
   const post = await db.getOne("community_posts", req.params.postId);
   if (!post) return res.status(404).json({ error: "Post not found." });
@@ -69,19 +62,17 @@ router.post("/posts/:postId/flag", async (req, res) => {
   }
   const updated = await db.update("community_posts", post.id, { flag_count: (post.flag_count || 0) + 1 });
   res.json({ post: updated });
-});
+}));
 
-// ── Admin moderation actions ────────────────────────────────────────────
-router.patch("/posts/:postId/moderate", async (req, res) => {
-  // body: { is_pinned?, is_hidden?, moderator_note? }
+router.patch("/posts/:postId/moderate", asyncHandler(async (req, res) => {
   const updated = await db.update("community_posts", req.params.postId, req.body);
   if (!updated) return res.status(404).json({ error: "Post not found." });
   res.json({ post: updated });
-});
+}));
 
-router.delete("/posts/:postId", async (req, res) => {
+router.delete("/posts/:postId", asyncHandler(async (req, res) => {
   await db.remove("community_posts", req.params.postId);
   res.json({ deleted: true });
-});
+}));
 
 export default router;

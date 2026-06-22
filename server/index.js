@@ -53,3 +53,18 @@ app.listen(PORT, () => {
   console.log(`\nTeen4Teen server running on http://localhost:${PORT}`);
   console.log(`Data mode: ${mode}${mode === "local-json" ? " (set SUPABASE_URL + SUPABASE_SERVICE_KEY in .env to switch to Supabase)" : ""}\n`);
 });
+
+// ── Global error handler ──────────────────────────────────────────────
+app.use((err, req, res, next) => {
+  console.error("Request error:", err.message);
+  if (res.headersSent) return next(err);
+  res.status(500).json({ error: "Something went wrong on our end. Please try again." });
+});
+
+// ── Process-level safety net ────────────────────────────────────────────
+process.on("unhandledRejection", (reason) => {
+  console.error("Unhandled promise rejection:", reason);
+});
+process.on("uncaughtException", (err) => {
+  console.error("Uncaught exception:", err);
+});

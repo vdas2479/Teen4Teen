@@ -1,19 +1,17 @@
 import express from "express";
 import * as db from "../db.js";
 import { notifyAdmin } from "../notify.js";
+import { asyncHandler } from "../asyncHandler.js";
 
 const router = express.Router();
 
-// Volunteer submits the interest form (public)
-router.post("/", async (req, res) => {
+router.post("/", asyncHandler(async (req, res) => {
   const { name, email, country, age_range, is_therapist, is_peer_supporter,
           languages, availability_hours, timezone, motivation } = req.body;
 
   if (!name || !email || !age_range) {
     return res.status(400).json({ error: "Name, email, and age range are required." });
   }
-
-  // Safety rule from the spec: no volunteers under 13, no exceptions.
   if (age_range === "under_13") {
     return res.status(400).json({ error: "Volunteers must be at least 13 years old." });
   }
@@ -42,21 +40,18 @@ router.post("/", async (req, res) => {
   );
 
   res.status(201).json({ volunteer });
-});
+}));
 
-// Admin: list all applications, optionally filtered by status
-router.get("/", async (req, res) => {
+router.get("/", asyncHandler(async (req, res) => {
   const filters = req.query.status ? { status: req.query.status } : {};
   const volunteers = await db.list("volunteers", filters);
   res.json({ volunteers });
-});
+}));
 
-// Admin: update application status (Pending | In Review | Awaiting Mock Session |
-// Flagged for Interview | Approved | Declined)
-router.patch("/:id", async (req, res) => {
+router.patch("/:id", asyncHandler(async (req, res) => {
   const updated = await db.update("volunteers", req.params.id, req.body);
   if (!updated) return res.status(404).json({ error: "Volunteer not found." });
   res.json({ volunteer: updated });
-});
+}));
 
 export default router;

@@ -1,14 +1,11 @@
 import express from "express";
 import * as db from "../db.js";
 import { supabase } from "../db.js";
+import { asyncHandler } from "../asyncHandler.js";
 
 const router = express.Router();
 
-// Admin login.
-// - If Supabase is configured, this uses real Supabase Auth.
-// - If not, it checks against DEV_ADMIN_EMAIL / DEV_ADMIN_PASSWORD from .env
-//   so you can log into /admin locally before Supabase is wired up.
-router.post("/login", async (req, res) => {
+router.post("/login", asyncHandler(async (req, res) => {
   const { email, password } = req.body;
 
   if (supabase) {
@@ -23,10 +20,9 @@ router.post("/login", async (req, res) => {
     return res.json({ token: "dev-mode-token", email });
   }
   return res.status(401).json({ error: "Invalid email or password." });
-});
+}));
 
-// Dashboard overview counts — used for the admin home screen
-router.get("/overview", async (req, res) => {
+router.get("/overview", asyncHandler(async (req, res) => {
   const [volunteers, requests, posts] = await Promise.all([
     db.list("volunteers"),
     db.list("meeting_requests"),
@@ -39,6 +35,6 @@ router.get("/overview", async (req, res) => {
     flagged_posts: posts.filter(p => (p.flag_count || 0) > 0).length,
     total_volunteers: volunteers.length
   });
-});
+}));
 
 export default router;
