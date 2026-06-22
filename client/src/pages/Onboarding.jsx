@@ -37,6 +37,20 @@ export default function Onboarding() {
       alert("We couldn't find an application with that email. Make sure you've submitted the Volunteer Interest Form first.");
       return;
     }
+
+    if (match.status === "Pending") {
+      alert("Thanks for applying! Your application is still being reviewed by an admin. We'll let you know by email once you're approved to start onboarding.");
+      return;
+    }
+    if (match.status === "Declined") {
+      alert("It looks like this application wasn't approved to move forward. If you think this is a mistake, please reach out via the Help tab.");
+      return;
+    }
+    if (match.status === "Flagged for Interview") {
+      alert("Your application needs a quick conversation with an admin before continuing. They'll be in touch to schedule that.");
+      return;
+    }
+
     setVolunteerId(match.id);
     setTier(match.volunteer_tier);
     setStage("checklist");

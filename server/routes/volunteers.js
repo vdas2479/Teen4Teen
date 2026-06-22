@@ -49,7 +49,7 @@ router.post("/", asyncHandler(async (req, res) => {
   await notifyVolunteer(
     email,
     "Your Teen4Teen application",
-    `Thanks for applying to volunteer with Teen4Teen, ${name}! Next step: head to ${onboardingLink} to complete your short orientation checklist and practice session. No need to wait for anything else from us first — you can start right away.`
+    `Thanks for applying to volunteer with Teen4Teen, ${name}! An admin will review your application shortly. Once approved, you can head to ${onboardingLink} to complete your short orientation checklist and practice session.`
   );
 
   res.status(201).json({ volunteer });

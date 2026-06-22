@@ -52,10 +52,38 @@ export default function ApplicationInbox() {
               <p><strong>Motivation:</strong> {v.motivation || "—"}</p>
 
               <div style={{ display: "flex", gap: "0.5rem", flexWrap: "wrap", marginTop: "0.8rem" }}>
-                <button className="btn btn-primary" style={{ fontSize: "0.8rem" }} onClick={() => setStatus(v.id, "Approved")}>Approve</button>
-                <button className="btn btn-secondary" style={{ fontSize: "0.8rem" }} onClick={() => setStatus(v.id, "Flagged for Interview")}>Flag for interview</button>
-                <button className="btn btn-ghost" style={{ fontSize: "0.8rem" }} onClick={() => setStatus(v.id, "Declined")}>Decline</button>
+                {v.status === "Pending" && (
+                  <>
+                    <button className="btn btn-primary" style={{ fontSize: "0.8rem" }} onClick={() => setStatus(v.id, "Awaiting Mock Session")}>
+                      Approve for onboarding →
+                    </button>
+                    <button className="btn btn-secondary" style={{ fontSize: "0.8rem" }} onClick={() => setStatus(v.id, "Flagged for Interview")}>Flag for interview</button>
+                    <button className="btn btn-ghost" style={{ fontSize: "0.8rem" }} onClick={() => setStatus(v.id, "Declined")}>Decline</button>
+                  </>
+                )}
+
+                {(v.status === "Awaiting Mock Session" || v.status === "In Review") && (
+                  <>
+                    <button className="btn btn-primary" style={{ fontSize: "0.8rem" }} onClick={() => setStatus(v.id, "Approved")}>
+                      Final approve ✓
+                    </button>
+                    <button className="btn btn-secondary" style={{ fontSize: "0.8rem" }} onClick={() => setStatus(v.id, "Flagged for Interview")}>Flag for interview</button>
+                    <button className="btn btn-ghost" style={{ fontSize: "0.8rem" }} onClick={() => setStatus(v.id, "Declined")}>Decline</button>
+                  </>
+                )}
+
+                {(v.status === "Approved" || v.status === "Declined" || v.status === "Flagged for Interview") && (
+                  <button className="btn btn-ghost" style={{ fontSize: "0.8rem" }} onClick={() => setStatus(v.id, "Pending")}>
+                    Reset to Pending
+                  </button>
+                )}
               </div>
+
+              <p style={{ fontSize: "0.78rem", color: "var(--gray)", marginTop: "0.6rem" }}>
+                {v.status === "Pending" && "This volunteer can't access onboarding (checklist/mock session) until you approve them for it."}
+                {(v.status === "Awaiting Mock Session" || v.status === "In Review") && "This volunteer can now access onboarding. \"Final approve\" should happen after you've reviewed their mock session transcript in Onboarding Tracker."}
+                {v.status === "Approved" && "This volunteer is fully approved and can appear in match suggestions."}
+              </p>
             </div>
           )}
         </div>

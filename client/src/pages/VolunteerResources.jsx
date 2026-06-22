@@ -65,19 +65,20 @@ export default function VolunteerResources() {
           {submitted ? (
             <div className="note-soft">
               <p style={{ margin: "0 0 0.8rem 0" }}>
-                Thank you — your application is in! You don't need to wait
-                for an email to get started.
+                Thank you — your application is in! An admin will review it
+                shortly. Once approved, you'll be able to start your short
+                orientation checklist and practice conversation.
               </p>
               <Link
                 to={`/onboarding?email=${encodeURIComponent(form.email)}`}
-                className="btn btn-primary"
+                className="btn btn-secondary"
                 style={{ display: "inline-block" }}
               >
-                Start your onboarding now →
+                Check your onboarding status →
               </Link>
               <p style={{ margin: "0.8rem 0 0 0", fontSize: "0.85rem" }}>
-                This takes you straight to your short orientation checklist
-                and practice conversation — no waiting required.
+                Save this link or just come back to this page and click it
+                again later — it'll let you in as soon as you're approved.
               </p>
             </div>
           ) : (

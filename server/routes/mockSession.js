@@ -58,7 +58,7 @@ router.post("/message", asyncHandler(async (req, res) => {
     ];
 
     const response = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${process.env.GEMINI_API_KEY}`,
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${process.env.GEMINI_API_KEY}`,
       {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -69,7 +69,14 @@ router.post("/message", asyncHandler(async (req, res) => {
       }
     );
     const data = await response.json();
-    const reply = data?.candidates?.[0]?.content?.parts?.[0]?.text || "...";
+    if (!response.ok || !data?.candidates?.[0]?.content?.parts?.[0]?.text) {
+      console.error("Gemini API did not return a usable response:", JSON.stringify(data));
+      return res.json({
+        reply: "Sorry, I'm having trouble responding right now. (This has been logged for the admin to look into.)",
+        mode: "gemini-error"
+      });
+    }
+    const reply = data.candidates[0].content.parts[0].text;
     res.json({ reply, mode: "gemini" });
   } catch (err) {
     res.status(500).json({ error: "AI session failed to respond.", details: err.message });
