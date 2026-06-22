@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 import { api } from "../api";
 
 const initialForm = {
@@ -63,9 +64,21 @@ export default function VolunteerResources() {
 
           {submitted ? (
             <div className="note-soft">
-              Thank you — your application is in. We'll be in touch by email
-              about next steps, including a short orientation checklist and a
-              simulated practice conversation.
+              <p style={{ margin: "0 0 0.8rem 0" }}>
+                Thank you — your application is in! You don't need to wait
+                for an email to get started.
+              </p>
+              <Link
+                to={`/onboarding?email=${encodeURIComponent(form.email)}`}
+                className="btn btn-primary"
+                style={{ display: "inline-block" }}
+              >
+                Start your onboarding now →
+              </Link>
+              <p style={{ margin: "0.8rem 0 0 0", fontSize: "0.85rem" }}>
+                This takes you straight to your short orientation checklist
+                and practice conversation — no waiting required.
+              </p>
             </div>
           ) : (
             <form onSubmit={submit}>

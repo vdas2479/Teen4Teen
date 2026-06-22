@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useSearchParams } from "react-router-dom";
 import { api } from "../api";
 
 const CHECKLIST = [
@@ -10,19 +11,28 @@ const CHECKLIST = [
 ];
 
 export default function Onboarding() {
-  const [stage, setStage] = useState("lookup"); // lookup -> checklist -> session -> done
+  const [searchParams] = useSearchParams();
+  const [stage, setStage] = useState("lookup");
   const [volunteerId, setVolunteerId] = useState("");
-  const [email, setEmail] = useState("");
+  const [email, setEmail] = useState(searchParams.get("email") || "");
   const [tier, setTier] = useState("Verified");
   const [checked, setChecked] = useState([]);
   const [history, setHistory] = useState([]);
   const [draft, setDraft] = useState("");
   const [sending, setSending] = useState(false);
+  const [autoLookupTried, setAutoLookupTried] = useState(false);
 
-  async function findApplication(e) {
-    e.preventDefault();
+  useEffect(() => {
+    const emailFromLink = searchParams.get("email");
+    if (emailFromLink && !autoLookupTried) {
+      setAutoLookupTried(true);
+      lookupByEmail(emailFromLink);
+    }
+  }, []);
+
+  async function lookupByEmail(emailToFind) {
     const { volunteers } = await api.listVolunteers();
-    const match = volunteers.find(v => v.email === email);
+    const match = volunteers.find(v => v.email === emailToFind);
     if (!match) {
       alert("We couldn't find an application with that email. Make sure you've submitted the Volunteer Interest Form first.");
       return;
@@ -30,6 +40,11 @@ export default function Onboarding() {
     setVolunteerId(match.id);
     setTier(match.volunteer_tier);
     setStage("checklist");
+  }
+
+  async function findApplication(e) {
+    e.preventDefault();
+    await lookupByEmail(email);
   }
 
   async function finishChecklist() {
@@ -87,9 +102,7 @@ export default function Onboarding() {
                 checked={checked.includes(i)}
                 onChange={() => setChecked(checked.includes(i) ? checked.filter(c => c !== i) : [...checked, i])}
               />
-              <span>
-                <strong>{item.title}.</strong> {item.body}
-              </span>
+              <span><strong>{item.title}.</strong> {item.body}</span>
             </label>
           ))}
           <button

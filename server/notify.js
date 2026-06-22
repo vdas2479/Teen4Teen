@@ -5,10 +5,9 @@
 // provider connected.
 // ─────────────────────────────────────────────────────────────────────────
 
-export async function notifyAdmin(subject, message) {
-  const to = process.env.ADMIN_NOTIFICATION_EMAIL;
+async function sendEmail(to, subject, message) {
   if (!process.env.RESEND_API_KEY || !to) {
-    console.log(`[notify] (no email provider configured) ${subject}: ${message}`);
+    console.log(`[notify] (no email provider configured) to ${to}: ${subject}: ${message}`);
     return { sent: false, reason: "no provider configured" };
   }
 
@@ -31,4 +30,12 @@ export async function notifyAdmin(subject, message) {
     console.error("[notify] failed to send email:", err.message);
     return { sent: false, reason: err.message };
   }
+}
+
+export async function notifyAdmin(subject, message) {
+  return sendEmail(process.env.ADMIN_NOTIFICATION_EMAIL, subject, message);
+}
+
+export async function notifyVolunteer(email, subject, message) {
+  return sendEmail(email, subject, message);
 }

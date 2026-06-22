@@ -1,6 +1,6 @@
 import express from "express";
 import * as db from "../db.js";
-import { notifyAdmin } from "../notify.js";
+import { notifyAdmin, notifyVolunteer } from "../notify.js";
 import { asyncHandler } from "../asyncHandler.js";
 
 const router = express.Router();
@@ -37,6 +37,19 @@ router.post("/", asyncHandler(async (req, res) => {
   await notifyAdmin(
     "New volunteer application",
     `${name} (${email}) just applied as a ${volunteer_tier === "Young" ? "Young Responder" : "Verified Responder"}.`
+  );
+
+  // Tell the volunteer themselves where to go next by email too, once
+  // Resend is connected. Until then, the frontend already shows this
+  // same link directly on screen, so nothing is blocked on email.
+  const siteUrl = process.env.SITE_URL || "";
+  const onboardingLink = siteUrl
+    ? `${siteUrl}/onboarding?email=${encodeURIComponent(email)}`
+    : "the Onboarding page on the site";
+  await notifyVolunteer(
+    email,
+    "Your Teen4Teen application",
+    `Thanks for applying to volunteer with Teen4Teen, ${name}! Next step: head to ${onboardingLink} to complete your short orientation checklist and practice session. No need to wait for anything else from us first — you can start right away.`
   );
 
   res.status(201).json({ volunteer });
