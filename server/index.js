@@ -1,6 +1,9 @@
 import express from "express";
 import cors from "cors";
 import dotenv from "dotenv";
+import path from "path";
+import fs from "fs";
+import { fileURLToPath } from "url";
 
 import volunteersRouter from "./routes/volunteers.js";
 import onboardingRouter from "./routes/onboarding.js";
@@ -14,7 +17,9 @@ import { mode } from "./db.js";
 
 dotenv.config();
 
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const app = express();
+
 app.use(cors());
 app.use(express.json());
 
@@ -31,8 +36,20 @@ app.use("/api/workshops", workshopsRouter);
 app.use("/api/meeting-requests", meetingRequestsRouter);
 app.use("/api/admin", adminRouter);
 
+const clientDistPath = path.join(__dirname, "..", "client", "dist");
+
+if (fs.existsSync(clientDistPath)) {
+  app.use(express.static(clientDistPath));
+  app.get(/^(?!\/api).*/, (req, res) => {
+    res.sendFile(path.join(clientDistPath, "index.html"));
+  });
+  console.log("Serving built frontend from client/dist alongside the API.");
+} else {
+  console.log("No client/dist found — running API-only. Run `npm run build` in client/ to serve the frontend from here too.");
+}
+
 const PORT = process.env.PORT || 4000;
 app.listen(PORT, () => {
-  console.log(`\nTeen4Teen API running on http://localhost:${PORT}`);
+  console.log(`\nTeen4Teen server running on http://localhost:${PORT}`);
   console.log(`Data mode: ${mode}${mode === "local-json" ? " (set SUPABASE_URL + SUPABASE_SERVICE_KEY in .env to switch to Supabase)" : ""}\n`);
 });
