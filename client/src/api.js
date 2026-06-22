@@ -27,6 +27,7 @@ export const api = {
 
   // Community
   listPosts: () => request("/community/posts"),
+  listAllPosts: () => request("/community/posts/all"), // admin only — includes hidden posts
   createPost: (body) => request("/community/posts", { method: "POST", body: JSON.stringify(body) }),
   reply: (postId, body) => request(`/community/posts/${postId}/replies`, { method: "POST", body: JSON.stringify(body) }),
   flagPost: (postId, body = {}) => request(`/community/posts/${postId}/flag`, { method: "POST", body: JSON.stringify(body) }),

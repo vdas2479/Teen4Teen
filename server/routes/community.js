@@ -9,6 +9,13 @@ router.get("/posts", asyncHandler(async (req, res) => {
   res.json({ posts: posts.filter(p => !p.is_hidden) });
 }));
 
+// Admin: get EVERY post, including hidden ones. Without this, hiding a
+// post from the admin dashboard would make it permanently inaccessible.
+router.get("/posts/all", asyncHandler(async (req, res) => {
+  const posts = await db.list("community_posts");
+  res.json({ posts });
+}));
+
 router.post("/posts", asyncHandler(async (req, res) => {
   const { display_name, tier_label, content, country, topic } = req.body;
   if (!display_name || !content) {
