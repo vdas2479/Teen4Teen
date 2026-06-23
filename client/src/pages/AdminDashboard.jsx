@@ -33,10 +33,11 @@ export default function AdminDashboard({ adminEmail, onLogout }) {
       <aside style={{ width: 250, padding: "1.6rem 1.2rem", background: "rgba(255,255,255,0.7)", borderRight: "1px solid rgba(233,213,255,0.6)" }}>
         <div style={{ display: "flex", alignItems: "center", gap: "0.6rem", marginBottom: "1.6rem" }}>
           <span style={{
-            width: 34, height: 34, borderRadius: "50%", background: "var(--gradient-primary)",
-            display: "flex", alignItems: "center", justifyContent: "center", color: "white",
-            fontFamily: "var(--font-display)", fontWeight: 700, fontSize: "0.8rem"
-          }}>T4T</span>
+            width: 34, height: 34, borderRadius: "50%", overflow: "hidden",
+            display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0
+          }}>
+            <img src="/logo.png" alt="Teen4Teen" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+          </span>
           <span style={{ fontFamily: "var(--font-display)", fontWeight: 600 }}>Admin</span>
         </div>
 

@@ -1,7 +1,40 @@
+import { useState } from "react";
 import { Link, NavLink } from "react-router-dom";
 
 export default function NavBar({ volunteerInfo, onVolunteerLogout }) {
+  const [logoOpen, setLogoOpen] = useState(false);
+
   return (
+    <>
+      {logoOpen && (
+        <div
+          onClick={() => setLogoOpen(false)}
+          style={{
+            position: "fixed", inset: 0, zIndex: 1000,
+            background: "rgba(36,20,51,0.7)",
+            backdropFilter: "blur(6px)",
+            display: "flex", alignItems: "center", justifyContent: "center",
+            cursor: "zoom-out"
+          }}
+        >
+          <img
+            src="/logo.png"
+            alt="Teen4Teen logo"
+            onClick={e => e.stopPropagation()}
+            style={{
+              maxWidth: "min(420px, 90vw)",
+              maxHeight: "90vh",
+              borderRadius: "50%",
+              objectFit: "cover",
+              width: "min(420px, 90vw)",
+              height: "min(420px, 90vw)",
+              boxShadow: "0 24px 80px rgba(219,39,119,0.35)",
+              cursor: "default"
+            }}
+          />
+        </div>
+      )}
+
     <header style={{
       background: "rgba(255,255,255,0.7)",
       backdropFilter: "blur(10px)",
@@ -20,19 +53,22 @@ export default function NavBar({ volunteerInfo, onVolunteerLogout }) {
         gap: "1rem",
         flexWrap: "wrap"
       }}>
-        <Link to="/" style={{ display: "flex", alignItems: "center", gap: "0.6rem", textDecoration: "none" }}>
-          <span style={{
-            width: 36, height: 36, borderRadius: "50%",
-            background: "var(--gradient-primary)",
-            display: "flex", alignItems: "center", justifyContent: "center",
-            color: "white", fontFamily: "var(--font-display)", fontWeight: 700, fontSize: "0.85rem"
-          }}>
-            T4T
-          </span>
-          <span style={{ fontFamily: "var(--font-display)", fontSize: "1.3rem", fontWeight: 600, color: "var(--ink)" }}>
+        <div style={{ display: "flex", alignItems: "center", gap: "0.6rem" }}>
+          <button
+            onClick={() => setLogoOpen(true)}
+            title="View logo"
+            style={{
+              background: "none", border: "none", padding: 0, cursor: "zoom-in",
+              width: 42, height: 42, borderRadius: "50%", overflow: "hidden",
+              flexShrink: 0, boxShadow: "0 2px 8px rgba(219,39,119,0.25)"
+            }}
+          >
+            <img src="/logo.png" alt="Teen4Teen" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+          </button>
+          <Link to="/" style={{ fontFamily: "var(--font-display)", fontSize: "1.3rem", fontWeight: 600, color: "var(--ink)", textDecoration: "none" }}>
             Teen4Teen
-          </span>
-        </Link>
+          </Link>
+        </div>
 
         <div style={{ display: "flex", gap: "1.6rem", alignItems: "center", flexWrap: "wrap" }}>
           {[
@@ -96,5 +132,6 @@ export default function NavBar({ volunteerInfo, onVolunteerLogout }) {
         </div>
       </nav>
     </header>
+    </>
   );
 }
