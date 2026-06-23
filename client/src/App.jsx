@@ -8,12 +8,21 @@ import Podcast from "./pages/Podcast";
 import VolunteerResources from "./pages/VolunteerResources";
 import Help from "./pages/Help";
 import Onboarding from "./pages/Onboarding";
+import VolunteerLogin from "./pages/VolunteerLogin";
+import VolunteerDashboard from "./pages/VolunteerDashboard";
 import AdminLogin from "./pages/AdminLogin";
 import AdminDashboard from "./pages/AdminDashboard";
+
+function loadVolInfo() {
+  try { return JSON.parse(sessionStorage.getItem("t4t_vol_info") || "null"); }
+  catch { return null; }
+}
 
 export default function App() {
   const [adminToken, setAdminToken] = useState(sessionStorage.getItem("t4t_admin_token"));
   const [adminEmail, setAdminEmail] = useState(sessionStorage.getItem("t4t_admin_email"));
+  const [volunteerToken, setVolunteerToken] = useState(sessionStorage.getItem("t4t_vol_token"));
+  const [volunteerInfo, setVolunteerInfo] = useState(loadVolInfo);
   const location = useLocation();
   const isAdminRoute = location.pathname.startsWith("/admin");
 
@@ -31,17 +40,33 @@ export default function App() {
     setAdminEmail(null);
   }
 
+  function handleVolunteerLogin(token, info) {
+    sessionStorage.setItem("t4t_vol_token", token);
+    sessionStorage.setItem("t4t_vol_info", JSON.stringify(info));
+    setVolunteerToken(token);
+    setVolunteerInfo(info);
+  }
+
+  function handleVolunteerLogout() {
+    sessionStorage.removeItem("t4t_vol_token");
+    sessionStorage.removeItem("t4t_vol_info");
+    setVolunteerToken(null);
+    setVolunteerInfo(null);
+  }
+
   return (
     <div style={{ minHeight: "100vh", display: "flex", flexDirection: "column" }}>
-      {!isAdminRoute && <NavBar />}
+      {!isAdminRoute && <NavBar volunteerInfo={volunteerInfo} onVolunteerLogout={handleVolunteerLogout} />}
       <div style={{ flex: 1 }}>
         <Routes>
           <Route path="/" element={<Home />} />
-          <Route path="/community" element={<Community />} />
+          <Route path="/community" element={<Community volunteerToken={volunteerToken} volunteerInfo={volunteerInfo} />} />
           <Route path="/podcast" element={<Podcast />} />
           <Route path="/volunteer" element={<VolunteerResources />} />
           <Route path="/help" element={<Help />} />
           <Route path="/onboarding" element={<Onboarding />} />
+          <Route path="/volunteer-login" element={<VolunteerLogin onLogin={handleVolunteerLogin} />} />
+          <Route path="/volunteer-dashboard" element={<VolunteerDashboard volunteerToken={volunteerToken} volunteerInfo={volunteerInfo} onLogout={handleVolunteerLogout} />} />
 
           {/* Unlisted admin routes — never linked from public nav, per spec */}
           <Route path="/admin" element={adminToken ? <Navigate to="/admin/dashboard" /> : <AdminLogin onLogin={handleLogin} />} />

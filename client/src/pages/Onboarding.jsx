@@ -143,8 +143,8 @@ export default function Onboarding() {
             {history.map((m, i) => (
               <div key={i} style={{
                 alignSelf: m.role === "volunteer" ? "flex-end" : "flex-start",
-                background: m.role === "volunteer" ? "var(--rose)" : "var(--lavender)",
-                color: m.role === "volunteer" ? "white" : "var(--plum)",
+                background: m.role === "volunteer" ? "var(--pink)" : "var(--lavender)",
+                color: m.role === "volunteer" ? "white" : "var(--purple-deep)",
                 borderRadius: 14, padding: "0.6em 1em", maxWidth: "75%"
               }}>
                 {m.content}

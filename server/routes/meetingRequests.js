@@ -52,4 +52,9 @@ router.patch("/:id", asyncHandler(async (req, res) => {
   res.json({ request: updated });
 }));
 
+router.get("/volunteer/:volunteerId", asyncHandler(async (req, res) => {
+  const meetings = await db.list("meeting_requests", { matched_volunteer_id: req.params.volunteerId });
+  res.json({ meetings });
+}));
+
 export default router;

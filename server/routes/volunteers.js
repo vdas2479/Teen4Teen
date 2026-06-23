@@ -67,4 +67,57 @@ router.patch("/:id", asyncHandler(async (req, res) => {
   res.json({ volunteer: updated });
 }));
 
+router.post("/:id/approve", asyncHandler(async (req, res) => {
+  const volunteer = await db.getOne("volunteers", req.params.id);
+  if (!volunteer) return res.status(404).json({ error: "Volunteer not found." });
+
+  const updated = await db.update("volunteers", req.params.id, { status: "Approved" });
+
+  const tierLabel = volunteer.volunteer_tier === "Young" ? "Young Responder" : "Verified Responder";
+  const siteUrl = process.env.SITE_URL || "";
+  const dashboardLink = siteUrl
+    ? `${siteUrl}/volunteer-dashboard?email=${encodeURIComponent(volunteer.email)}`
+    : "the Volunteer Dashboard on the Teen4Teen site";
+
+  await notifyVolunteer(
+    volunteer.email,
+    "You've been approved — welcome to Teen4Teen!",
+    `Hi ${volunteer.name},\n\nCongratulations! We're delighted to welcome you as a ${tierLabel} on Teen4Teen.\n\nYour application has been reviewed and you are now fully approved. You can log in to your volunteer dashboard at any time to see seekers you've been matched with and track your sessions:\n\n${dashboardLink}\n\nThank you for your commitment to supporting others. We're glad you're here.\n\n— The Teen4Teen team`
+  );
+
+  res.json({ volunteer: updated });
+}));
+
+router.post("/:id/schedule-interview", asyncHandler(async (req, res) => {
+  const { date, time, format, link_or_location, notes } = req.body;
+  if (!date || !time) return res.status(400).json({ error: "Date and time are required." });
+
+  const volunteer = await db.getOne("volunteers", req.params.id);
+  if (!volunteer) return res.status(404).json({ error: "Volunteer not found." });
+
+  const updated = await db.update("volunteers", req.params.id, {
+    interview_date: date,
+    interview_time: time,
+    interview_format: format || "virtual",
+    interview_link_or_location: link_or_location || "",
+    interview_notes: notes || ""
+  });
+
+  const formatLabel = format === "in-person" ? "in person" : "virtually";
+  const locationLine = link_or_location
+    ? `\nLocation / link: ${link_or_location}`
+    : "";
+  const notesLine = notes
+    ? `\n\nNote from the admin:\n${notes}`
+    : "";
+
+  await notifyVolunteer(
+    volunteer.email,
+    "Your Teen4Teen interview is scheduled",
+    `Hi ${volunteer.name},\n\nWe'd love to have a short conversation with you as part of your Teen4Teen application. Here are your interview details:\n\nDate: ${date}\nTime: ${time}\nFormat: ${format === "in-person" ? "In person" : "Virtual"}${locationLine}${notesLine}\n\nIf you need to reschedule or have any questions, please reach out via the Help page on the site.\n\nLooking forward to speaking with you!\n\n— The Teen4Teen team`
+  );
+
+  res.json({ volunteer: updated });
+}));
+
 export default router;

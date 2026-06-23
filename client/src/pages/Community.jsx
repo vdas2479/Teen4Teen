@@ -16,10 +16,13 @@ function timeAgo(iso) {
   return `${Math.floor(hrs / 24)}d ago`;
 }
 
-export default function Community() {
+export default function Community({ volunteerToken, volunteerInfo }) {
+  const isApprovedVolunteer = volunteerInfo?.status === "Approved";
+  const tierLabel = volunteerInfo?.tier === "Young" ? "Young Responder" : "Verified Responder";
+
   const [posts, setPosts] = useState([]);
   const [showWarning, setShowWarning] = useState(true);
-  const [displayName, setDisplayName] = useState("");
+  const [displayName, setDisplayName] = useState(isApprovedVolunteer ? volunteerInfo.name : "");
   const [country, setCountry] = useState("");
   const [topic, setTopic] = useState("General");
   const [newPost, setNewPost] = useState("");
@@ -35,11 +38,10 @@ export default function Community() {
     if (!newPost.trim()) return;
     const { post } = await api.createPost({
       display_name: displayName.trim() || "anonymous",
-      tier_label: "Seeker",
       content: newPost.trim(),
       country: country.trim() || null,
       topic
-    });
+    }, volunteerToken);
     setPosts([post, ...posts]);
     setNewPost("");
   }
@@ -49,9 +51,8 @@ export default function Community() {
     if (!text) return;
     const { post } = await api.reply(postId, {
       display_name: displayName.trim() || "anonymous",
-      tier_label: "Seeker", // in a logged-in volunteer session this would be "Verified Responder" / "Young Responder"
       content: text
-    });
+    }, volunteerToken);
     setPosts(posts.map(p => p.id === postId ? post : p));
     setReplyDrafts({ ...replyDrafts, [postId]: "" });
   }
@@ -78,6 +79,13 @@ export default function Community() {
             <button onClick={() => setShowWarning(false)} className="btn-ghost btn" style={{ display: "block", marginTop: "0.6rem", padding: "0.2em 0.7em", fontSize: "0.78rem" }}>
               Got it
             </button>
+          </div>
+        )}
+
+        {isApprovedVolunteer && (
+          <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", marginBottom: "1rem", background: "var(--lavender-soft)", borderRadius: 10, padding: "0.6em 0.9em", fontSize: "0.85rem", color: "var(--purple-deep)" }}>
+            <span style={{ fontWeight: 700 }}>Posting as</span>
+            <Badge tier={tierLabel} />
           </div>
         )}
 

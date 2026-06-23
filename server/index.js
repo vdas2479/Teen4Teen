@@ -6,6 +6,7 @@ import fs from "fs";
 import { fileURLToPath } from "url";
 
 import volunteersRouter from "./routes/volunteers.js";
+import volunteerAuthRouter from "./routes/volunteerAuth.js";
 import onboardingRouter from "./routes/onboarding.js";
 import mockSessionRouter from "./routes/mockSession.js";
 import communityRouter from "./routes/community.js";
@@ -28,6 +29,7 @@ app.get("/api/health", (req, res) => {
 });
 
 app.use("/api/volunteers", volunteersRouter);
+app.use("/api/volunteer-auth", volunteerAuthRouter);
 app.use("/api/onboarding", onboardingRouter);
 app.use("/api/mock-session", mockSessionRouter);
 app.use("/api/community", communityRouter);

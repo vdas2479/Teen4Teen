@@ -1,13 +1,18 @@
 const BASE = "/api";
 
 async function request(path, options = {}) {
+  const { headers: extra, ...rest } = options;
   const res = await fetch(`${BASE}${path}`, {
-    headers: { "Content-Type": "application/json" },
-    ...options,
+    headers: { "Content-Type": "application/json", ...extra },
+    ...rest,
   });
   const data = await res.json().catch(() => ({}));
   if (!res.ok) throw new Error(data.error || "Something went wrong.");
   return data;
+}
+
+function authHeader(token) {
+  return token ? { Authorization: `Bearer ${token}` } : {};
 }
 
 export const api = {
@@ -15,6 +20,9 @@ export const api = {
   submitVolunteerForm: (body) => request("/volunteers", { method: "POST", body: JSON.stringify(body) }),
   listVolunteers: (status) => request(`/volunteers${status ? `?status=${status}` : ""}`),
   updateVolunteer: (id, patch) => request(`/volunteers/${id}`, { method: "PATCH", body: JSON.stringify(patch) }),
+  approveVolunteer: (id) => request(`/volunteers/${id}/approve`, { method: "POST" }),
+  scheduleInterview: (id, body) => request(`/volunteers/${id}/schedule-interview`, { method: "POST", body: JSON.stringify(body) }),
+  getVolunteerMeetings: (volunteerId) => request(`/meeting-requests/volunteer/${volunteerId}`),
 
   // Onboarding
   getOnboarding: (volunteerId) => request(`/onboarding/${volunteerId}`),
@@ -25,11 +33,16 @@ export const api = {
   sendMockMessage: (body) => request("/mock-session/message", { method: "POST", body: JSON.stringify(body) }),
   completeMockSession: (volunteerId, transcript) => request(`/mock-session/${volunteerId}/complete`, { method: "POST", body: JSON.stringify({ transcript }) }),
 
+  // Volunteer auth
+  volunteerRegister: (body) => request("/volunteer-auth/register", { method: "POST", body: JSON.stringify(body) }),
+  volunteerLogin: (body) => request("/volunteer-auth/login", { method: "POST", body: JSON.stringify(body) }),
+  volunteerMe: (token) => request("/volunteer-auth/me", { headers: authHeader(token) }),
+
   // Community
   listPosts: () => request("/community/posts"),
   listAllPosts: () => request("/community/posts/all"), // admin only — includes hidden posts
-  createPost: (body) => request("/community/posts", { method: "POST", body: JSON.stringify(body) }),
-  reply: (postId, body) => request(`/community/posts/${postId}/replies`, { method: "POST", body: JSON.stringify(body) }),
+  createPost: (body, token) => request("/community/posts", { method: "POST", body: JSON.stringify(body), headers: authHeader(token) }),
+  reply: (postId, body, token) => request(`/community/posts/${postId}/replies`, { method: "POST", body: JSON.stringify(body), headers: authHeader(token) }),
   flagPost: (postId, body = {}) => request(`/community/posts/${postId}/flag`, { method: "POST", body: JSON.stringify(body) }),
   moderatePost: (postId, patch) => request(`/community/posts/${postId}/moderate`, { method: "PATCH", body: JSON.stringify(patch) }),
   deletePost: (postId) => request(`/community/posts/${postId}`, { method: "DELETE" }),

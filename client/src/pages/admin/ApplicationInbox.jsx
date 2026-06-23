@@ -2,11 +2,15 @@ import { useEffect, useState } from "react";
 import { api } from "../../api";
 
 const STATUSES = ["Pending", "In Review", "Awaiting Mock Session", "Flagged for Interview", "Approved", "Declined"];
+const EMPTY_INTERVIEW = { date: "", time: "", format: "virtual", link_or_location: "", notes: "" };
 
 export default function ApplicationInbox() {
   const [volunteers, setVolunteers] = useState([]);
   const [filter, setFilter] = useState("");
   const [expanded, setExpanded] = useState(null);
+  const [scheduleFor, setScheduleFor] = useState(null);
+  const [interviewForm, setInterviewForm] = useState(EMPTY_INTERVIEW);
+  const [scheduling, setScheduling] = useState(false);
 
   function load() { api.listVolunteers(filter || undefined).then(d => setVolunteers(d.volunteers)); }
   useEffect(load, [filter]);
@@ -14,6 +18,37 @@ export default function ApplicationInbox() {
   async function setStatus(id, status) {
     await api.updateVolunteer(id, { status });
     load();
+  }
+
+  async function finalApprove(v) {
+    await api.approveVolunteer(v.id);
+    load();
+    alert(`${v.name} has been approved. A confirmation email has been sent to ${v.email}.`);
+  }
+
+  function openScheduler(id) {
+    setScheduleFor(scheduleFor === id ? null : id);
+    setInterviewForm(EMPTY_INTERVIEW);
+  }
+
+  async function submitInterview(e, v) {
+    e.preventDefault();
+    if (scheduling) return;
+    setScheduling(true);
+    try {
+      await api.scheduleInterview(v.id, interviewForm);
+      alert(`Interview scheduled. An email with the details has been sent to ${v.email}.`);
+      setScheduleFor(null);
+      setInterviewForm(EMPTY_INTERVIEW);
+    } catch (err) {
+      alert(err.message);
+    } finally {
+      setScheduling(false);
+    }
+  }
+
+  function updateForm(field, value) {
+    setInterviewForm(prev => ({ ...prev, [field]: value }));
   }
 
   return (
@@ -64,25 +99,83 @@ export default function ApplicationInbox() {
 
                 {(v.status === "Awaiting Mock Session" || v.status === "In Review") && (
                   <>
-                    <button className="btn btn-primary" style={{ fontSize: "0.8rem" }} onClick={() => setStatus(v.id, "Approved")}>
-                      Final approve ✓
+                    <button className="btn btn-primary" style={{ fontSize: "0.8rem" }} onClick={() => finalApprove(v)}>
+                      Final approve ✓ (sends email)
                     </button>
                     <button className="btn btn-secondary" style={{ fontSize: "0.8rem" }} onClick={() => setStatus(v.id, "Flagged for Interview")}>Flag for interview</button>
                     <button className="btn btn-ghost" style={{ fontSize: "0.8rem" }} onClick={() => setStatus(v.id, "Declined")}>Decline</button>
                   </>
                 )}
 
-                {(v.status === "Approved" || v.status === "Declined" || v.status === "Flagged for Interview") && (
+                {v.status === "Flagged for Interview" && (
+                  <>
+                    <button className="btn btn-primary" style={{ fontSize: "0.8rem" }} onClick={() => openScheduler(v.id)}>
+                      {scheduleFor === v.id ? "Cancel scheduling" : "Schedule interview →"}
+                    </button>
+                    <button className="btn btn-secondary" style={{ fontSize: "0.8rem" }} onClick={() => finalApprove(v)}>
+                      Final approve ✓ (sends email)
+                    </button>
+                    <button className="btn btn-ghost" style={{ fontSize: "0.8rem" }} onClick={() => setStatus(v.id, "Declined")}>Decline</button>
+                  </>
+                )}
+
+                {(v.status === "Approved" || v.status === "Declined") && (
                   <button className="btn btn-ghost" style={{ fontSize: "0.8rem" }} onClick={() => setStatus(v.id, "Pending")}>
                     Reset to Pending
                   </button>
                 )}
               </div>
 
-              <p style={{ fontSize: "0.78rem", color: "var(--gray)", marginTop: "0.6rem" }}>
-                {v.status === "Pending" && "This volunteer can't access onboarding (checklist/mock session) until you approve them for it."}
-                {(v.status === "Awaiting Mock Session" || v.status === "In Review") && "This volunteer can now access onboarding. \"Final approve\" should happen after you've reviewed their mock session transcript in Onboarding Tracker."}
-                {v.status === "Approved" && "This volunteer is fully approved and can appear in match suggestions."}
+              {scheduleFor === v.id && (
+                <form onSubmit={(e) => submitInterview(e, v)} style={{ marginTop: "1rem", borderTop: "1px solid var(--lavender-soft)", paddingTop: "1rem" }}>
+                  <p style={{ fontWeight: 700, fontSize: "0.9rem", color: "var(--ink)", margin: "0 0 0.8rem" }}>
+                    Schedule interview with {v.name}
+                  </p>
+                  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0 1rem" }}>
+                    <div className="field">
+                      <label>Date</label>
+                      <input required type="date" value={interviewForm.date} onChange={e => updateForm("date", e.target.value)} />
+                    </div>
+                    <div className="field">
+                      <label>Time</label>
+                      <input required type="time" value={interviewForm.time} onChange={e => updateForm("time", e.target.value)} />
+                    </div>
+                    <div className="field">
+                      <label>Format</label>
+                      <select value={interviewForm.format} onChange={e => updateForm("format", e.target.value)}>
+                        <option value="virtual">Virtual</option>
+                        <option value="in-person">In person</option>
+                      </select>
+                    </div>
+                    <div className="field">
+                      <label>{interviewForm.format === "in-person" ? "Location" : "Meeting link"}</label>
+                      <input
+                        value={interviewForm.link_or_location}
+                        onChange={e => updateForm("link_or_location", e.target.value)}
+                        placeholder={interviewForm.format === "in-person" ? "e.g. Room 4, Building B" : "e.g. https://meet.google.com/..."}
+                      />
+                    </div>
+                  </div>
+                  <div className="field">
+                    <label>Message to volunteer <span style={{ fontWeight: 400, color: "var(--gray)" }}>(optional)</span></label>
+                    <textarea
+                      rows={2}
+                      value={interviewForm.notes}
+                      onChange={e => updateForm("notes", e.target.value)}
+                      placeholder="Topics to cover, things to prepare, etc."
+                    />
+                  </div>
+                  <button className="btn btn-primary" type="submit" disabled={scheduling} style={{ fontSize: "0.85rem" }}>
+                    {scheduling ? "Sending…" : "Send interview invite →"}
+                  </button>
+                </form>
+              )}
+
+              <p style={{ fontSize: "0.78rem", color: "var(--gray)", marginTop: "0.8rem" }}>
+                {v.status === "Pending" && "This volunteer can't access onboarding until you approve them for it."}
+                {(v.status === "Awaiting Mock Session" || v.status === "In Review") && "\"Final approve\" emails the volunteer and marks them fully approved. Review their mock session transcript in Onboarding Tracker first."}
+                {v.status === "Flagged for Interview" && "Schedule the interview to send them an email with date, time, and link. \"Final approve\" is still available if you want to skip the interview."}
+                {v.status === "Approved" && "This volunteer is fully approved and will appear in match suggestions."}
               </p>
             </div>
           )}

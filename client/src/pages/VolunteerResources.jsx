@@ -38,6 +38,12 @@ export default function VolunteerResources() {
         women and teens looking for mental health access.
       </p>
 
+      <div style={{ marginBottom: "1.5rem" }}>
+        <Link to="/volunteer-dashboard" className="btn btn-secondary" style={{ fontSize: "0.88rem" }}>
+          Already a volunteer? View your dashboard →
+        </Link>
+      </div>
+
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1.2fr", gap: "2rem", marginTop: "2rem", alignItems: "flex-start" }}>
         {/* Workshops */}
         <div className="card">
@@ -79,7 +85,7 @@ export default function VolunteerResources() {
               <p style={{ margin: "0.8rem 0 0 0", fontSize: "0.85rem" }}>
                 Save this link or just come back to this page and click it
                 again later — it'll let you in as soon as you're approved.
-              </p>
+              </p>  
             </div>
           ) : (
             <form onSubmit={submit}>

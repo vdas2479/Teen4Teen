@@ -1,6 +1,6 @@
 import { Link, NavLink } from "react-router-dom";
 
-export default function NavBar() {
+export default function NavBar({ volunteerInfo, onVolunteerLogout }) {
   return (
     <header style={{
       background: "rgba(255,255,255,0.7)",
@@ -68,6 +68,28 @@ export default function NavBar() {
           }}>
             <option value="en">English</option>
           </select>
+
+          {volunteerInfo ? (
+            <div style={{ display: "flex", alignItems: "center", gap: "0.6rem" }}>
+              <Link to="/volunteer-dashboard" style={{ fontSize: "0.85rem", fontWeight: 700, color: "var(--purple-deep)", textDecoration: "none" }}>
+                {volunteerInfo.name}
+              </Link>
+              <span className={`tag ${volunteerInfo.tier === "Young" ? "badge-young" : "badge-verified"}`} style={{ fontSize: "0.72rem" }}>
+                {volunteerInfo.tier === "Young" ? "Young Responder" : "Verified Responder"}
+              </span>
+              <button
+                onClick={onVolunteerLogout}
+                style={{ background: "none", border: "none", color: "var(--gray)", fontSize: "0.8rem", cursor: "pointer", padding: 0 }}
+              >
+                Sign out
+              </button>
+            </div>
+          ) : (
+            <Link to="/volunteer-login" className="btn btn-ghost" style={{ fontSize: "0.85rem", padding: "0.6em 1.1em" }}>
+              Volunteer sign-in
+            </Link>
+          )}
+
           <Link to="/help" className="btn btn-primary" style={{ fontSize: "0.85rem", padding: "0.6em 1.3em" }}>
             Request support
           </Link>
