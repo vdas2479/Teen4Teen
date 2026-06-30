@@ -9,7 +9,8 @@ function ChatPanel({ chat, volunteerToken }) {
   const [draft, setDraft] = useState("");
   const [sending, setSending] = useState(false);
   const [callForm, setCallForm] = useState(null); // null = hidden, object = open
-  const bottomRef = useRef(null);
+  const scrollBoxRef = useRef(null);
+  const prevCountRef = useRef(0);
 
   async function loadMessages() {
     try {
@@ -24,8 +25,13 @@ function ChatPanel({ chat, volunteerToken }) {
     return () => clearInterval(interval);
   }, [chat.id, volunteerToken]);
 
+  // Only auto-scroll the chat box itself, and only when a new message arrives
+  // (not on every 5s poll) — otherwise it keeps yanking the whole page down.
   useEffect(() => {
-    bottomRef.current?.scrollIntoView({ behavior: "smooth" });
+    if (messages.length > prevCountRef.current && scrollBoxRef.current) {
+      scrollBoxRef.current.scrollTop = scrollBoxRef.current.scrollHeight;
+    }
+    prevCountRef.current = messages.length;
   }, [messages]);
 
   async function sendMessage(e) {
@@ -57,7 +63,7 @@ function ChatPanel({ chat, volunteerToken }) {
       )}
 
       {/* Messages */}
-      <div style={{
+      <div ref={scrollBoxRef} style={{
         background: "rgba(255,255,255,0.55)",
         border: "1.5px solid var(--lavender)",
         borderRadius: 12,
@@ -121,7 +127,6 @@ function ChatPanel({ chat, volunteerToken }) {
             </div>
           );
         })}
-        <div ref={bottomRef} />
       </div>
 
       {/* Call-time proposal form */}

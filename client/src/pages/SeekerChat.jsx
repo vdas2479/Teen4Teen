@@ -9,7 +9,8 @@ export default function SeekerChat() {
   const [draft, setDraft] = useState("");
   const [error, setError] = useState("");
   const [sending, setSending] = useState(false);
-  const bottomRef = useRef(null);
+  const scrollBoxRef = useRef(null);
+  const prevCountRef = useRef(0);
 
   async function loadMessages() {
     try {
@@ -27,8 +28,13 @@ export default function SeekerChat() {
     return () => clearInterval(interval);
   }, [token]);
 
+  // Only auto-scroll the chat box itself, and only when a new message arrives
+  // (not on every 5s poll) — otherwise it keeps yanking the whole page down.
   useEffect(() => {
-    bottomRef.current?.scrollIntoView({ behavior: "smooth" });
+    if (messages.length > prevCountRef.current && scrollBoxRef.current) {
+      scrollBoxRef.current.scrollTop = scrollBoxRef.current.scrollHeight;
+    }
+    prevCountRef.current = messages.length;
   }, [messages]);
 
   async function send(e) {
@@ -81,7 +87,7 @@ export default function SeekerChat() {
       )}
 
       {/* Chat area */}
-      <div style={{
+      <div ref={scrollBoxRef} style={{
         background: "rgba(255,255,255,0.65)",
         border: "1.5px solid var(--lavender)",
         borderRadius: "var(--radius-md)",
@@ -145,7 +151,6 @@ export default function SeekerChat() {
             </div>
           );
         })}
-        <div ref={bottomRef} />
       </div>
 
       <form onSubmit={send} style={{ display: "flex", gap: "0.6rem" }}>
