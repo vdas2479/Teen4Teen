@@ -13,6 +13,7 @@ import communityRouter from "./routes/community.js";
 import videosRouter from "./routes/videos.js";
 import workshopsRouter from "./routes/workshops.js";
 import meetingRequestsRouter from "./routes/meetingRequests.js";
+import chatsRouter from "./routes/chats.js";
 import adminRouter from "./routes/admin.js";
 import { mode } from "./db.js";
 
@@ -36,6 +37,7 @@ app.use("/api/community", communityRouter);
 app.use("/api/videos", videosRouter);
 app.use("/api/workshops", workshopsRouter);
 app.use("/api/meeting-requests", meetingRequestsRouter);
+app.use("/api/chats", chatsRouter);
 app.use("/api/admin", adminRouter);
 
 const clientDistPath = path.join(__dirname, "..", "client", "dist");

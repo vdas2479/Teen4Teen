@@ -66,6 +66,15 @@ export const api = {
   confirmMatch: (id, volunteer_id) => request(`/meeting-requests/${id}/match`, { method: "POST", body: JSON.stringify({ volunteer_id }) }),
   updateMeetingRequest: (id, patch) => request(`/meeting-requests/${id}`, { method: "PATCH", body: JSON.stringify(patch) }),
 
+  // Chats — seeker (token in URL, no login)
+  getSeekerChat: (token) => request(`/chats/seeker/${token}`),
+  sendSeekerMessage: (token, content) => request(`/chats/seeker/${token}/messages`, { method: "POST", body: JSON.stringify({ content }) }),
+
+  // Chats — volunteer (requires session token)
+  getVolunteerChats: (volToken) => request("/chats/by-volunteer", { headers: authHeader(volToken) }),
+  getVolunteerChatMessages: (chatId, volToken) => request(`/chats/volunteer/${chatId}`, { headers: authHeader(volToken) }),
+  sendVolunteerMessage: (chatId, body, volToken) => request(`/chats/volunteer/${chatId}/messages`, { method: "POST", body: JSON.stringify(body), headers: authHeader(volToken) }),
+
   // Admin
   login: (email, password) => request("/admin/login", { method: "POST", body: JSON.stringify({ email, password }) }),
   overview: () => request("/admin/overview"),

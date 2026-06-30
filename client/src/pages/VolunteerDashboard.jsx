@@ -1,27 +1,250 @@
-import { useState, useEffect } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { useEffect, useRef, useState } from "react";
+import { Link } from "react-router-dom";
 import { api } from "../api";
+
+// ── Inline chat panel rendered inside each matched meeting card ───────
+
+function ChatPanel({ chat, volunteerToken }) {
+  const [messages, setMessages] = useState([]);
+  const [draft, setDraft] = useState("");
+  const [sending, setSending] = useState(false);
+  const [callForm, setCallForm] = useState(null); // null = hidden, object = open
+  const bottomRef = useRef(null);
+
+  async function loadMessages() {
+    try {
+      const data = await api.getVolunteerChatMessages(chat.id, volunteerToken);
+      setMessages(data.messages);
+    } catch (_) {}
+  }
+
+  useEffect(() => {
+    loadMessages();
+    const interval = setInterval(loadMessages, 5000);
+    return () => clearInterval(interval);
+  }, [chat.id, volunteerToken]);
+
+  useEffect(() => {
+    bottomRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [messages]);
+
+  async function sendMessage(e) {
+    e.preventDefault();
+    const content = callForm
+      ? `${callForm.date} at ${callForm.time}${callForm.link ? ` — ${callForm.link}` : ""}${callForm.note ? `\n${callForm.note}` : ""}`
+      : draft.trim();
+    if (!content || sending) return;
+    setSending(true);
+    try {
+      await api.sendVolunteerMessage(
+        chat.id,
+        { content, proposed_call_time: callForm ? `${callForm.date} at ${callForm.time}${callForm.link ? ` — ${callForm.link}` : ""}` : null },
+        volunteerToken
+      );
+      setDraft("");
+      setCallForm(null);
+      await loadMessages();
+    } catch (_) {}
+    finally { setSending(false); }
+  }
+
+  return (
+    <div style={{ marginTop: "1rem", borderTop: "1px solid var(--lavender)", paddingTop: "1rem" }}>
+      {chat.meeting_format === "call" && (
+        <div className="note-soft" style={{ marginBottom: "0.8rem", fontSize: "0.83rem", padding: "0.55rem 0.9rem" }}>
+          📞 Call session — use "Propose call time" below to suggest times to the seeker.
+        </div>
+      )}
+
+      {/* Messages */}
+      <div style={{
+        background: "rgba(255,255,255,0.55)",
+        border: "1.5px solid var(--lavender)",
+        borderRadius: 12,
+        padding: "0.8rem",
+        minHeight: 140,
+        maxHeight: 340,
+        overflowY: "auto",
+        display: "flex",
+        flexDirection: "column",
+        gap: "0.6rem",
+        marginBottom: "0.7rem"
+      }}>
+        {messages.length === 0 && (
+          <p style={{ color: "var(--gray)", fontSize: "0.85rem", textAlign: "center", margin: "auto 0" }}>
+            No messages yet. Send a kind hello to get the conversation started.
+          </p>
+        )}
+
+        {messages.map(msg => {
+          const isMe = msg.sender_type === "volunteer";
+          if (msg.proposed_call_time) {
+            return (
+              <div key={msg.id} style={{ display: "flex", flexDirection: "column", alignItems: "flex-end" }}>
+                <div style={{
+                  background: "#FFFBEA",
+                  border: "1.5px solid #F6D860",
+                  borderRadius: 14,
+                  padding: "0.65rem 0.9rem",
+                  maxWidth: "85%",
+                  fontSize: "0.87rem"
+                }}>
+                  <p style={{ margin: "0 0 0.25rem", fontWeight: 700, color: "#6B5300" }}>📅 Proposed call time</p>
+                  <p style={{ margin: 0, color: "#6B5300" }}>{msg.proposed_call_time}</p>
+                  {msg.content && !msg.content.startsWith(msg.proposed_call_time.split(" — ")[0]) && (
+                    <p style={{ margin: "0.3rem 0 0", color: "#6B5300", fontSize: "0.83rem" }}>{msg.content}</p>
+                  )}
+                </div>
+                <span style={{ fontSize: "0.7rem", color: "var(--gray-soft)", marginTop: "0.15rem" }}>
+                  You · {new Date(msg.created_at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
+                </span>
+              </div>
+            );
+          }
+
+          return (
+            <div key={msg.id} style={{ display: "flex", flexDirection: "column", alignItems: isMe ? "flex-end" : "flex-start" }}>
+              <div style={{
+                background: isMe ? "var(--gradient-primary)" : "var(--lavender-soft)",
+                color: isMe ? "white" : "var(--ink)",
+                borderRadius: isMe ? "16px 16px 4px 16px" : "16px 16px 16px 4px",
+                padding: "0.6rem 0.9rem",
+                maxWidth: "82%",
+                fontSize: "0.9rem",
+                lineHeight: 1.45
+              }}>
+                {msg.content}
+              </div>
+              <span style={{ fontSize: "0.7rem", color: "var(--gray-soft)", marginTop: "0.15rem" }}>
+                {isMe ? "You" : msg.sender_name} · {new Date(msg.created_at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
+              </span>
+            </div>
+          );
+        })}
+        <div ref={bottomRef} />
+      </div>
+
+      {/* Call-time proposal form */}
+      {callForm && (
+        <div style={{
+          background: "#FFFBEA",
+          border: "1.5px solid #F6D860",
+          borderRadius: 12,
+          padding: "0.8rem 1rem",
+          marginBottom: "0.6rem"
+        }}>
+          <p style={{ fontWeight: 700, fontSize: "0.85rem", color: "#6B5300", margin: "0 0 0.6rem" }}>📅 Propose a call time</p>
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0.5rem 0.8rem" }}>
+            <div className="field" style={{ margin: 0 }}>
+              <label style={{ fontSize: "0.8rem" }}>Date</label>
+              <input type="date" value={callForm.date} onChange={e => setCallForm({ ...callForm, date: e.target.value })} />
+            </div>
+            <div className="field" style={{ margin: 0 }}>
+              <label style={{ fontSize: "0.8rem" }}>Time</label>
+              <input type="time" value={callForm.time} onChange={e => setCallForm({ ...callForm, time: e.target.value })} />
+            </div>
+          </div>
+          <div className="field" style={{ margin: "0.5rem 0 0" }}>
+            <label style={{ fontSize: "0.8rem" }}>Video / call link (optional)</label>
+            <input
+              placeholder="e.g. meet.google.com/..."
+              value={callForm.link}
+              onChange={e => setCallForm({ ...callForm, link: e.target.value })}
+            />
+          </div>
+          <div className="field" style={{ margin: "0.5rem 0 0" }}>
+            <label style={{ fontSize: "0.8rem" }}>Additional note (optional)</label>
+            <input
+              placeholder="e.g. 'Let me know if this doesn't work and I'll suggest another time.'"
+              value={callForm.note}
+              onChange={e => setCallForm({ ...callForm, note: e.target.value })}
+            />
+          </div>
+          <div style={{ display: "flex", gap: "0.5rem", marginTop: "0.7rem" }}>
+            <button
+              className="btn btn-gold"
+              disabled={!callForm.date || !callForm.time || sending}
+              onClick={sendMessage}
+              style={{ fontSize: "0.83rem" }}
+            >
+              {sending ? "Sending…" : "Send proposal"}
+            </button>
+            <button
+              className="btn btn-ghost"
+              onClick={() => setCallForm(null)}
+              style={{ fontSize: "0.83rem" }}
+            >
+              Cancel
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Message input row */}
+      {!callForm && (
+        <form onSubmit={sendMessage} style={{ display: "flex", gap: "0.5rem", alignItems: "center" }}>
+          <input
+            value={draft}
+            onChange={e => setDraft(e.target.value)}
+            placeholder="Type a message…"
+            style={{
+              flex: 1,
+              padding: "0.65em 1em",
+              borderRadius: 999,
+              border: "1.5px solid var(--lavender)",
+              fontSize: "0.9rem",
+              fontFamily: "var(--font-body)"
+            }}
+          />
+          {chat.meeting_format === "call" && (
+            <button
+              type="button"
+              className="btn btn-ghost"
+              onClick={() => setCallForm({ date: "", time: "", link: "", note: "" })}
+              style={{ fontSize: "0.8rem", whiteSpace: "nowrap", flexShrink: 0 }}
+            >
+              📅 Propose call time
+            </button>
+          )}
+          <button
+            type="submit"
+            className="btn btn-primary"
+            disabled={sending || !draft.trim()}
+            style={{ flexShrink: 0 }}
+          >
+            {sending ? "…" : "Send"}
+          </button>
+        </form>
+      )}
+    </div>
+  );
+}
+
+// ── Main volunteer dashboard ──────────────────────────────────────────
 
 export default function VolunteerDashboard({ volunteerToken, volunteerInfo, onLogout }) {
   const [volunteer, setVolunteer] = useState(null);
   const [meetings, setMeetings] = useState([]);
-  const navigate = useNavigate();
+  const [chatsByMeeting, setChatsByMeeting] = useState({});
+  const [openChatMeetingId, setOpenChatMeetingId] = useState(null);
 
   useEffect(() => {
     if (!volunteerToken) return;
-    // Re-validate the session and get fresh data on each load
     api.volunteerMe(volunteerToken)
       .then(async info => {
         setVolunteer(info);
         if (info.status === "Approved") {
-          const { meetings } = await api.getVolunteerMeetings(info.volunteer_id);
+          const [{ meetings }, { chats }] = await Promise.all([
+            api.getVolunteerMeetings(info.volunteer_id),
+            api.getVolunteerChats(volunteerToken)
+          ]);
           setMeetings(meetings);
+          const byMeeting = {};
+          chats.forEach(c => { byMeeting[c.meeting_request_id] = c; });
+          setChatsByMeeting(byMeeting);
         }
       })
-      .catch(() => {
-        // Session expired — clear it
-        onLogout();
-      });
+      .catch(() => onLogout());
   }, [volunteerToken]);
 
   if (!volunteerToken) {
@@ -42,7 +265,6 @@ export default function VolunteerDashboard({ volunteerToken, volunteerInfo, onLo
     return <div className="page-narrow"><p style={{ color: "var(--gray)" }}>Loading…</p></div>;
   }
 
-  // Re-map from /me response shape (volunteer_id) to what we use below
   const vol = { ...volunteer, id: volunteer.volunteer_id, volunteer_tier: volunteer.tier };
 
   const statusConfig = {
@@ -123,29 +345,58 @@ export default function VolunteerDashboard({ volunteerToken, volunteerInfo, onLo
                 No sessions matched yet. When a seeker is a good fit for you, an admin will make the match and you'll be notified.
               </p>
             ) : (
-              meetings.map(m => (
-                <div key={m.id} style={{ borderTop: "1px solid var(--lavender-soft)", paddingTop: "0.8rem", marginTop: "0.8rem" }}>
-                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", flexWrap: "wrap", gap: "0.4rem" }}>
-                    <div>
-                      <strong>{m.display_name || "Anonymous seeker"}</strong>
-                      {m.support_type && (
-                        <span className="tag badge-seeker" style={{ marginLeft: "0.5rem", fontSize: "0.75rem" }}>{m.support_type}</span>
+              meetings.map(m => {
+                const chat = chatsByMeeting[m.id];
+                const isOpen = openChatMeetingId === m.id;
+
+                return (
+                  <div key={m.id} style={{ borderTop: "1px solid var(--lavender-soft)", paddingTop: "0.9rem", marginTop: "0.9rem" }}>
+                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", flexWrap: "wrap", gap: "0.4rem" }}>
+                      <div>
+                        <strong>{m.display_name || "Anonymous seeker"}</strong>
+                        {m.support_type && (
+                          <span className="tag badge-seeker" style={{ marginLeft: "0.5rem", fontSize: "0.75rem" }}>{m.support_type}</span>
+                        )}
+                        {m.meeting_format && (
+                          <span className="tag" style={{ marginLeft: "0.4rem", fontSize: "0.75rem", background: m.meeting_format === "call" ? "#FFF9E6" : "var(--lavender-soft)", color: m.meeting_format === "call" ? "#6B5300" : "var(--purple-deep)" }}>
+                            {m.meeting_format === "call" ? "📞 Call" : "💬 Chat"}
+                          </span>
+                        )}
+                      </div>
+                      {chat && (
+                        <button
+                          className="btn btn-secondary"
+                          style={{ fontSize: "0.8rem" }}
+                          onClick={() => setOpenChatMeetingId(isOpen ? null : m.id)}
+                        >
+                          {isOpen ? "Close chat ▲" : "Open chat ▼"}
+                        </button>
                       )}
                     </div>
-                    <span className="tag" style={{ fontSize: "0.75rem" }}>{m.status}</span>
+
+                    {m.availability && (
+                      <p style={{ fontSize: "0.85rem", margin: "0.3rem 0 0", color: "var(--gray)" }}>
+                        Availability: {m.availability}
+                      </p>
+                    )}
+                    {m.notes && (
+                      <p style={{ fontSize: "0.85rem", margin: "0.3rem 0 0", fontStyle: "italic", color: "var(--gray-soft)" }}>
+                        "{m.notes}"
+                      </p>
+                    )}
+
+                    {chat && isOpen && (
+                      <ChatPanel chat={chat} volunteerToken={volunteerToken} />
+                    )}
+
+                    {!chat && (
+                      <p style={{ fontSize: "0.8rem", color: "var(--gray-soft)", marginTop: "0.4rem" }}>
+                        Chat will appear here once the seeker opens their link.
+                      </p>
+                    )}
                   </div>
-                  {m.availability && (
-                    <p style={{ fontSize: "0.85rem", margin: "0.3rem 0 0", color: "var(--gray)" }}>
-                      Availability: {m.availability}
-                    </p>
-                  )}
-                  {m.notes && (
-                    <p style={{ fontSize: "0.85rem", margin: "0.3rem 0 0", fontStyle: "italic", color: "var(--gray-soft)" }}>
-                      {m.notes}
-                    </p>
-                  )}
-                </div>
-              ))
+                );
+              })
             )}
           </div>
         </>

@@ -32,6 +32,9 @@ export default function MeetingRequestInbox() {
             <div>
               <strong>{r.display_name || "Anonymous"}</strong> · {r.email} ·{" "}
               <span className="tag">{r.preferred_responder_type}</span>{" "}
+              <span className="tag" style={{ background: r.meeting_format === "call" ? "#FFF9E6" : "var(--lavender-soft)", color: r.meeting_format === "call" ? "#6B5300" : "var(--purple-deep)" }}>
+                {r.meeting_format === "call" ? "📞 Call" : "💬 Chat"}
+              </span>{" "}
               <span className="tag" style={{ background: "var(--lavender)", color: "var(--purple)" }}>{r.status}</span>
             </div>
             {r.status === "New" && (

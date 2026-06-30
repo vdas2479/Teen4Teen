@@ -3,7 +3,7 @@ import { api } from "../api";
 
 const initialForm = {
   display_name: "", email: "", support_type: "not_sure",
-  preferred_responder_type: "either", notes: "", availability: ""
+  preferred_responder_type: "either", meeting_format: "chat", notes: "", availability: ""
 };
 
 export default function Help() {
@@ -104,6 +104,24 @@ export default function Help() {
                   {label}
                 </label>
               ))}
+
+              <div style={{ marginTop: "0.9rem", marginBottom: "0.2rem" }}>
+                <label style={{ fontWeight: 700, fontSize: "0.88rem", display: "block", marginBottom: "0.5rem" }}>How would you prefer to meet?</label>
+                {[
+                  ["chat", "💬 Chat — written messages at our own pace"],
+                  ["call", "📞 Call — a video or phone call with my volunteer"],
+                ].map(([val, label]) => (
+                  <label key={val} className={`choice-card ${form.meeting_format === val ? "selected" : ""}`}>
+                    <input
+                      type="radio" name="meeting_format" value={val}
+                      checked={form.meeting_format === val}
+                      onChange={() => update("meeting_format", val)}
+                      style={{ width: "auto" }}
+                    />
+                    {label}
+                  </label>
+                ))}
+              </div>
 
               <div className="field" style={{ marginTop: "0.8rem" }}>
                 <label>Anything you'd like us to know before we match you? (optional)</label>

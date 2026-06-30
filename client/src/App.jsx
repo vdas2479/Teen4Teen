@@ -12,6 +12,7 @@ import VolunteerLogin from "./pages/VolunteerLogin";
 import VolunteerDashboard from "./pages/VolunteerDashboard";
 import AdminLogin from "./pages/AdminLogin";
 import AdminDashboard from "./pages/AdminDashboard";
+import SeekerChat from "./pages/SeekerChat";
 
 function loadVolInfo() {
   try { return JSON.parse(sessionStorage.getItem("t4t_vol_info") || "null"); }
@@ -67,6 +68,7 @@ export default function App() {
           <Route path="/onboarding" element={<Onboarding />} />
           <Route path="/volunteer-login" element={<VolunteerLogin onLogin={handleVolunteerLogin} />} />
           <Route path="/volunteer-dashboard" element={<VolunteerDashboard volunteerToken={volunteerToken} volunteerInfo={volunteerInfo} onLogout={handleVolunteerLogout} />} />
+          <Route path="/chat/:token" element={<SeekerChat />} />
 
           {/* Unlisted admin routes — never linked from public nav, per spec */}
           <Route path="/admin" element={adminToken ? <Navigate to="/admin/dashboard" /> : <AdminLogin onLogin={handleLogin} />} />
