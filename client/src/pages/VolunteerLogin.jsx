@@ -22,7 +22,7 @@ export default function VolunteerLogin({ onLogin }) {
     e.preventDefault();
     setError("");
     if (mode === "register" && password !== password2) {
-      setError("Passwords don't match.");
+      setError("passwords_mismatch");
       return;
     }
     setLoading(true);
@@ -44,6 +44,48 @@ export default function VolunteerLogin({ onLogin }) {
     }
   }
 
+  function ErrorBlock() {
+    if (!error) return null;
+
+    const raw = error.toLowerCase();
+    let message = error;
+    let extra = null;
+
+    if (error === "passwords_mismatch") {
+      message = "Passwords don't match — please try again.";
+    } else if (raw.includes("no volunteer application found")) {
+      message = "We couldn't find an application for that email address.";
+      extra = (
+        <>
+          To create a volunteer account you must first submit a volunteer application and wait for admin approval.{" "}
+          <Link to="/volunteer" style={{ color: "var(--pink-deep)", fontWeight: 700 }}>Apply to volunteer →</Link>
+        </>
+      );
+    } else if (raw.includes("still under review") || raw.includes("pending")) {
+      message = "Your application is still being reviewed.";
+      extra = "Once an admin approves you for onboarding you'll be able to create your account. Check back soon!";
+    } else if (raw.includes("not approved") || raw.includes("declined")) {
+      message = "Your application was not approved.";
+      extra = "If you think this was a mistake, please reach out to us via the Help page.";
+    } else if (raw.includes("already exists") || raw.includes("already registered")) {
+      message = "An account already exists for that email.";
+      extra = (
+        <>
+          <button type="button" style={{ background: "none", border: "none", color: "var(--pink-deep)", fontWeight: 700, cursor: "pointer", padding: 0, fontSize: "inherit" }} onClick={() => switchMode("login")}>
+            Sign in instead →
+          </button>
+        </>
+      );
+    }
+
+    return (
+      <div style={{ background: "#FEE2E2", borderRadius: 8, padding: "0.7em 0.9em", marginBottom: "1rem", fontSize: "0.9rem", color: "#991B1B" }}>
+        <strong>{message}</strong>
+        {extra && <p style={{ margin: "0.35em 0 0", fontSize: "0.88rem" }}>{extra}</p>}
+      </div>
+    );
+  }
+
   return (
     <div className="page-narrow">
       <span className="eyebrow">Volunteer Area</span>
@@ -57,11 +99,7 @@ export default function VolunteerLogin({ onLogin }) {
       )}
 
       <form onSubmit={handleSubmit} className="card" style={{ marginTop: "1rem" }}>
-        {error && (
-          <p style={{ color: "var(--pink-deep)", background: "#FEE2E2", borderRadius: 8, padding: "0.6em 0.9em", marginBottom: "1rem", fontSize: "0.9rem" }}>
-            {error}
-          </p>
-        )}
+        <ErrorBlock />
 
         <div className="field">
           <label>Email</label>
