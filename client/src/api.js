@@ -65,6 +65,7 @@ export const api = {
   getMatches: (id) => request(`/meeting-requests/${id}/matches`),
   confirmMatch: (id, volunteer_id) => request(`/meeting-requests/${id}/match`, { method: "POST", body: JSON.stringify({ volunteer_id }) }),
   updateMeetingRequest: (id, patch) => request(`/meeting-requests/${id}`, { method: "PATCH", body: JSON.stringify(patch) }),
+  getChatLink: (id) => request(`/meeting-requests/${id}/chat`),
 
   // Chats — seeker (token in URL, no login)
   getSeekerChat: (token) => request(`/chats/seeker/${token}`),

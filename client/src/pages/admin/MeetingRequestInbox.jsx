@@ -5,6 +5,8 @@ export default function MeetingRequestInbox() {
   const [requests, setRequests] = useState([]);
   const [matches, setMatches] = useState({});
   const [loadingMatches, setLoadingMatches] = useState(null);
+  const [chatLinks, setChatLinks] = useState({});
+  const [copiedId, setCopiedId] = useState(null);
 
   function load() { api.listMeetingRequests().then(d => setRequests(d.requests)); }
   useEffect(load, []);
@@ -17,8 +19,21 @@ export default function MeetingRequestInbox() {
   }
 
   async function confirm(requestId, volunteerId) {
-    await api.confirmMatch(requestId, volunteerId);
+    const { chat_link } = await api.confirmMatch(requestId, volunteerId);
+    setChatLinks(prev => ({ ...prev, [requestId]: chat_link }));
     load();
+  }
+
+  async function showChatLink(requestId) {
+    if (chatLinks[requestId]) return;
+    const { chat_link } = await api.getChatLink(requestId);
+    setChatLinks(prev => ({ ...prev, [requestId]: chat_link }));
+  }
+
+  async function copyLink(requestId, link) {
+    await navigator.clipboard.writeText(link);
+    setCopiedId(requestId);
+    setTimeout(() => setCopiedId(null), 1500);
   }
 
   return (
@@ -44,6 +59,28 @@ export default function MeetingRequestInbox() {
             )}
           </div>
           {r.notes && <p style={{ fontSize: "0.88rem", marginTop: "0.5rem" }}>"{r.notes}"</p>}
+
+          {r.status === "Matched" && (
+            <div style={{ marginTop: "0.7rem" }}>
+              {chatLinks[r.id] ? (
+                <div style={{ display: "flex", alignItems: "center", gap: "0.6rem", flexWrap: "wrap" }}>
+                  <code style={{ fontSize: "0.78rem", background: "var(--lavender-soft)", padding: "0.3em 0.7em", borderRadius: 8, wordBreak: "break-all" }}>
+                    {chatLinks[r.id]}
+                  </code>
+                  <button className="btn btn-ghost" style={{ fontSize: "0.78rem" }} onClick={() => copyLink(r.id, chatLinks[r.id])}>
+                    {copiedId === r.id ? "Copied ✓" : "Copy"}
+                  </button>
+                </div>
+              ) : (
+                <button className="btn btn-ghost" style={{ fontSize: "0.78rem" }} onClick={() => showChatLink(r.id)}>
+                  Show seeker's chat link
+                </button>
+              )}
+              <p style={{ fontSize: "0.76rem", color: "var(--gray-soft)", marginTop: "0.3rem" }}>
+                Use this to manually send the seeker their chat link if email delivery isn't set up yet.
+              </p>
+            </div>
+          )}
 
           {matches[r.id] && (
             <div style={{ marginTop: "0.8rem" }}>

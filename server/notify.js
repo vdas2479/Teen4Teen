@@ -19,12 +19,16 @@ async function sendEmail(to, subject, message) {
         "Content-Type": "application/json"
       },
       body: JSON.stringify({
-        from: "Teen4Teen <notifications@teen4teen.org>",
+        from: process.env.RESEND_FROM_EMAIL || "Teen4Teen <onboarding@resend.dev>",
         to,
         subject: `Teen4Teen: ${subject}`,
         text: message
       })
     });
+    if (!res.ok) {
+      const errBody = await res.text().catch(() => "");
+      console.error(`[notify] Resend rejected the email (${res.status}): ${errBody}`);
+    }
     return { sent: res.ok };
   } catch (err) {
     console.error("[notify] failed to send email:", err.message);

@@ -74,7 +74,17 @@ router.post("/:id/match", asyncHandler(async (req, res) => {
     `Hi ${meetingReq.display_name || "there"},\n\nGreat news — we've found a volunteer match for you on Teen4Teen!\n\nOpen your private chat here:\n${chatLink}\n\nThis link is unique to you. Bookmark it so you can return to your conversation at any time.${formatNote}\n\nWe're rooting for you,\nThe Teen4Teen Team`
   );
 
-  res.json({ request: updated });
+  res.json({ request: updated, chat_link: chatLink });
+}));
+
+// Admin convenience — fetch the chat link for an already-matched request
+// (useful while in Resend's sandbox mode, before a domain is verified).
+router.get("/:id/chat", asyncHandler(async (req, res) => {
+  const chats = await db.list("chats", { meeting_request_id: req.params.id });
+  const chat = chats[0];
+  if (!chat) return res.status(404).json({ error: "No chat exists for this request yet." });
+  const baseUrl = process.env.BASE_URL || "http://localhost:5173";
+  res.json({ chat, chat_link: `${baseUrl}/chat/${chat.seeker_token}` });
 }));
 
 router.patch("/:id", asyncHandler(async (req, res) => {
