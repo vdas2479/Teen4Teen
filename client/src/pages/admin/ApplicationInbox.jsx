@@ -11,8 +11,14 @@ export default function ApplicationInbox() {
   const [scheduleFor, setScheduleFor] = useState(null);
   const [interviewForm, setInterviewForm] = useState(EMPTY_INTERVIEW);
   const [scheduling, setScheduling] = useState(false);
+  const [loadError, setLoadError] = useState("");
 
-  function load() { api.listVolunteers(filter || undefined).then(d => setVolunteers(d.volunteers)); }
+  function load() {
+    setLoadError("");
+    api.listVolunteers(filter || undefined)
+      .then(d => setVolunteers(d.volunteers))
+      .catch(err => setLoadError(`Could not load applications: ${err.message}`));
+  }
   useEffect(load, [filter]);
 
   async function setStatus(id, status) {
@@ -53,7 +59,16 @@ export default function ApplicationInbox() {
 
   return (
     <div>
-      <h2>Application Inbox</h2>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "0.5rem" }}>
+        <h2 style={{ margin: 0 }}>Application Inbox</h2>
+        <button className="btn btn-ghost" style={{ fontSize: "0.8rem" }} onClick={load}>↻ Refresh</button>
+      </div>
+
+      {loadError && (
+        <div style={{ background: "#FEE2E2", color: "#991B1B", borderRadius: 8, padding: "0.6rem 0.9rem", marginBottom: "1rem", fontSize: "0.88rem" }}>
+          {loadError}
+        </div>
+      )}
 
       <div style={{ display: "flex", gap: "0.5rem", marginBottom: "1rem", flexWrap: "wrap" }}>
         <button className={`btn ${filter === "" ? "btn-primary" : "btn-ghost"}`} onClick={() => setFilter("")} style={{ fontSize: "0.8rem" }}>All</button>
