@@ -7,6 +7,7 @@ import MeetingRequestInbox from "./admin/MeetingRequestInbox";
 import CommunityModerator from "./admin/CommunityModerator";
 import VideoManager from "./admin/VideoManager";
 import WorkshopManager from "./admin/WorkshopManager";
+import VolunteerInbox from "./admin/VolunteerInbox";
 
 const TABS = {
   overview: ["Overview", "📊", Overview],
@@ -16,6 +17,7 @@ const TABS = {
   community: ["Community Moderator", "💬", CommunityModerator],
   videos: ["Video Manager", "🎬", VideoManager],
   workshops: ["Workshop Manager", "🗓️", WorkshopManager],
+  volunteerInbox: ["Volunteer Inbox", "✉️", VolunteerInbox],
 };
 
 export default function AdminDashboard({ adminEmail, onLogout }) {

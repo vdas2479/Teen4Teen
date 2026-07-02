@@ -225,6 +225,110 @@ function ChatPanel({ chat, volunteerToken }) {
   );
 }
 
+// ── Admin chat panel ─────────────────────────────────────────────────
+
+function AdminChatPanel({ volunteerToken }) {
+  const [messages, setMessages] = useState([]);
+  const [draft, setDraft] = useState("");
+  const [sending, setSending] = useState(false);
+  const scrollBoxRef = useRef(null);
+  const prevCountRef = useRef(0);
+
+  async function load() {
+    try {
+      const d = await api.getMyAdminChat(volunteerToken);
+      setMessages(d.messages);
+    } catch (_) {}
+  }
+
+  useEffect(() => {
+    load();
+    const interval = setInterval(load, 5000);
+    return () => clearInterval(interval);
+  }, [volunteerToken]);
+
+  useEffect(() => {
+    if (messages.length > prevCountRef.current && scrollBoxRef.current) {
+      scrollBoxRef.current.scrollTop = scrollBoxRef.current.scrollHeight;
+    }
+    prevCountRef.current = messages.length;
+  }, [messages]);
+
+  async function send(e) {
+    e.preventDefault();
+    if (!draft.trim() || sending) return;
+    setSending(true);
+    try {
+      await api.sendAdminChatMessage(draft.trim(), volunteerToken);
+      setDraft("");
+      await load();
+    } catch (_) {}
+    finally { setSending(false); }
+  }
+
+  return (
+    <div className="card" style={{ marginTop: "1.2rem" }}>
+      <h2 style={{ fontSize: "1.05rem", marginBottom: "0.3rem" }}>💬 Message the admin</h2>
+      <p style={{ fontSize: "0.83rem", color: "var(--gray)", marginBottom: "0.9rem", marginTop: 0 }}>
+        Suggest a video, ask a question, or send us anything — this is your private thread with the Teen4Teen team.
+      </p>
+
+      <div ref={scrollBoxRef} style={{
+        background: "rgba(255,255,255,0.55)",
+        border: "1.5px solid var(--lavender)",
+        borderRadius: 12,
+        padding: "0.8rem",
+        minHeight: 120,
+        maxHeight: 300,
+        overflowY: "auto",
+        display: "flex",
+        flexDirection: "column",
+        gap: "0.6rem",
+        marginBottom: "0.7rem"
+      }}>
+        {messages.length === 0 && (
+          <p style={{ color: "var(--gray)", fontSize: "0.85rem", textAlign: "center", margin: "auto 0" }}>
+            No messages yet. Send us a video suggestion, a question, or anything on your mind.
+          </p>
+        )}
+        {messages.map(msg => {
+          const isMe = msg.sender_type === "volunteer";
+          return (
+            <div key={msg.id} style={{ display: "flex", flexDirection: "column", alignItems: isMe ? "flex-end" : "flex-start" }}>
+              <div style={{
+                background: isMe ? "var(--gradient-primary)" : "var(--lavender-soft)",
+                color: isMe ? "white" : "var(--ink)",
+                borderRadius: isMe ? "16px 16px 4px 16px" : "16px 16px 16px 4px",
+                padding: "0.6rem 0.9rem",
+                maxWidth: "82%",
+                fontSize: "0.9rem",
+                lineHeight: 1.45
+              }}>
+                {msg.content}
+              </div>
+              <span style={{ fontSize: "0.7rem", color: "var(--gray-soft)", marginTop: "0.15rem" }}>
+                {isMe ? "You" : "Teen4Teen Admin"} · {new Date(msg.created_at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
+              </span>
+            </div>
+          );
+        })}
+      </div>
+
+      <form onSubmit={send} style={{ display: "flex", gap: "0.5rem" }}>
+        <input
+          value={draft}
+          onChange={e => setDraft(e.target.value)}
+          placeholder="Type a message or paste a video link…"
+          style={{ flex: 1, padding: "0.65em 1em", borderRadius: 999, border: "1.5px solid var(--lavender)", fontSize: "0.9rem", fontFamily: "var(--font-body)" }}
+        />
+        <button type="submit" className="btn btn-primary" disabled={sending || !draft.trim()} style={{ flexShrink: 0 }}>
+          {sending ? "…" : "Send"}
+        </button>
+      </form>
+    </div>
+  );
+}
+
 // ── Main volunteer dashboard ──────────────────────────────────────────
 
 export default function VolunteerDashboard({ volunteerToken, volunteerInfo, onLogout }) {
@@ -404,6 +508,7 @@ export default function VolunteerDashboard({ volunteerToken, volunteerInfo, onLo
               })
             )}
           </div>
+          <AdminChatPanel volunteerToken={volunteerToken} />
         </>
       )}
 

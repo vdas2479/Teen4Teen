@@ -79,6 +79,13 @@ export const api = {
   getVolunteerChatMessages: (chatId, volToken) => request(`/chats/volunteer/${chatId}`, { headers: authHeader(volToken) }),
   sendVolunteerMessage: (chatId, body, volToken) => request(`/chats/volunteer/${chatId}/messages`, { method: "POST", body: JSON.stringify(body), headers: authHeader(volToken) }),
 
+  // Volunteer ↔ admin chat
+  getMyAdminChat: (volToken) => request("/admin-chats/my", { headers: authHeader(volToken) }),
+  sendAdminChatMessage: (content, volToken) => request("/admin-chats/my/messages", { method: "POST", body: JSON.stringify({ content }), headers: authHeader(volToken) }),
+  listAdminChats: () => request("/admin-chats"),
+  getAdminChat: (chatId) => request(`/admin-chats/${chatId}`),
+  replyAdminChat: (chatId, content) => request(`/admin-chats/${chatId}/reply`, { method: "POST", body: JSON.stringify({ content }) }),
+
   // Admin
   login: (email, password) => request("/admin/login", { method: "POST", body: JSON.stringify({ email, password }) }),
   overview: () => request("/admin/overview"),
