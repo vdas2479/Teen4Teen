@@ -60,7 +60,10 @@ export default function Podcast() {
                 )}
                 <div style={{ padding: "1.1rem" }}>
                   <span className="tag">{video.category_tag}</span>
-                  <h3 style={{ fontSize: "1.05rem", margin: "0.5rem 0 0.3rem" }}>{video.title}</h3>
+                  <h3 style={{ fontSize: "1.05rem", margin: "0.5rem 0 0.2rem" }}>{video.title}</h3>
+                  {video.creator && (
+                    <p style={{ fontSize: "0.8rem", color: "var(--gray-soft)", margin: "0 0 0.3rem" }}>by {video.creator}</p>
+                  )}
                   <p style={{ fontSize: "0.88rem", margin: 0 }}>{video.description}</p>
                 </div>
               </div>
