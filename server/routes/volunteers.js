@@ -88,6 +88,15 @@ router.post("/:id/approve", asyncHandler(async (req, res) => {
   res.json({ volunteer: updated });
 }));
 
+router.delete("/:id", asyncHandler(async (req, res) => {
+  const volunteer = await db.getOne("volunteers", req.params.id);
+  if (!volunteer) return res.status(404).json({ error: "Volunteer not found." });
+  await db.remove("volunteers", req.params.id);
+  const progress = await db.list("onboarding_progress", { volunteer_id: req.params.id });
+  if (progress[0]) await db.remove("onboarding_progress", progress[0].id);
+  res.json({ deleted: true });
+}));
+
 router.post("/:id/schedule-interview", asyncHandler(async (req, res) => {
   const { date, time, format, link_or_location, notes } = req.body;
   if (!date || !time) return res.status(400).json({ error: "Date and time are required." });

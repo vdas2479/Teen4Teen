@@ -26,6 +26,12 @@ export default function ApplicationInbox() {
     load();
   }
 
+  async function deleteVolunteer(v) {
+    if (!window.confirm(`Permanently delete ${v.name}'s application and all their data? This cannot be undone.`)) return;
+    await api.deleteVolunteer(v.id);
+    load();
+  }
+
   async function finalApprove(v) {
     await api.approveVolunteer(v.id);
     load();
@@ -134,10 +140,21 @@ export default function ApplicationInbox() {
                   </>
                 )}
 
-                {(v.status === "Approved" || v.status === "Declined") && (
+                {v.status === "Approved" && (
                   <button className="btn btn-ghost" style={{ fontSize: "0.8rem" }} onClick={() => setStatus(v.id, "Pending")}>
                     Reset to Pending
                   </button>
+                )}
+
+                {v.status === "Declined" && (
+                  <>
+                    <button className="btn btn-ghost" style={{ fontSize: "0.8rem" }} onClick={() => setStatus(v.id, "Pending")}>
+                      Reset to Pending
+                    </button>
+                    <button className="btn btn-ghost" style={{ fontSize: "0.8rem", color: "#C0392B" }} onClick={() => deleteVolunteer(v)}>
+                      Delete permanently
+                    </button>
+                  </>
                 )}
               </div>
 

@@ -21,6 +21,7 @@ export const api = {
   listVolunteers: (status) => request(`/volunteers${status ? `?status=${status}` : ""}`),
   updateVolunteer: (id, patch) => request(`/volunteers/${id}`, { method: "PATCH", body: JSON.stringify(patch) }),
   approveVolunteer: (id) => request(`/volunteers/${id}/approve`, { method: "POST" }),
+  deleteVolunteer: (id) => request(`/volunteers/${id}`, { method: "DELETE" }),
   scheduleInterview: (id, body) => request(`/volunteers/${id}/schedule-interview`, { method: "POST", body: JSON.stringify(body) }),
   getVolunteerMeetings: (volunteerId) => request(`/meeting-requests/volunteer/${volunteerId}`),
 
@@ -58,6 +59,8 @@ export const api = {
   addWorkshop: (body) => request("/workshops", { method: "POST", body: JSON.stringify(body) }),
   updateWorkshop: (id, patch) => request(`/workshops/${id}`, { method: "PATCH", body: JSON.stringify(patch) }),
   deleteWorkshop: (id) => request(`/workshops/${id}`, { method: "DELETE" }),
+  rsvpWorkshop: (id, body) => request(`/workshops/${id}/rsvp`, { method: "POST", body: JSON.stringify(body) }),
+  getWorkshopRsvps: (id) => request(`/workshops/${id}/rsvps`),
 
   // Meeting requests
   submitMeetingRequest: (body) => request("/meeting-requests", { method: "POST", body: JSON.stringify(body) }),

@@ -54,12 +54,20 @@ export default function VolunteerResources() {
           {workshops.length === 0 && <p style={{ color: "var(--gray)", fontSize: "0.9rem" }}>No workshops scheduled right now — check back soon.</p>}
           {workshops.map(w => (
             <div key={w.id} style={{ borderTop: "1px solid var(--lavender-soft)", padding: "0.9rem 0" }}>
+              {w.flyer_url && (
+                <img
+                  src={w.flyer_url}
+                  alt={`${w.title} flyer`}
+                  style={{ width: "100%", borderRadius: 10, marginBottom: "0.7rem", objectFit: "cover", maxHeight: 220 }}
+                  onError={e => { e.target.style.display = "none"; }}
+                />
+              )}
               <h3 style={{ fontSize: "1rem", margin: 0 }}>{w.title}</h3>
               <p style={{ fontSize: "0.82rem", color: "var(--gray-soft)", margin: "0.2rem 0" }}>
                 {w.date} · {w.time} · {w.format === "virtual" ? "Virtual" : "In-person"}
               </p>
               <p style={{ fontSize: "0.88rem", margin: "0.3rem 0" }}>{w.description}</p>
-              {w.location_or_link && <a href={w.location_or_link} target="_blank" rel="noreferrer">Details / link →</a>}
+              <Link to={`/workshop/${w.id}`} style={{ fontSize: "0.88rem", fontWeight: 600 }}>View details & link →</Link>
             </div>
           ))}
         </div>
