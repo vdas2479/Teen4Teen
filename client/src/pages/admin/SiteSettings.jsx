@@ -34,6 +34,20 @@ const FIELD_META = [
     placeholder: "https://youtube.com/@yourchannel",
     type: "url",
   },
+  {
+    key: "terms_url",
+    label: "Terms of Service document URL",
+    hint: "Paste a link to your Terms of Service PDF (e.g. a Google Drive or Dropbox link). This will appear as a clickable link in all consent checkboxes across the site.",
+    placeholder: "https://drive.google.com/file/d/your-terms.pdf",
+    type: "url",
+  },
+  {
+    key: "privacy_url",
+    label: "Privacy Policy document URL",
+    hint: "Paste a link to your Privacy Policy PDF. Appears in consent checkboxes wherever personal data is collected.",
+    placeholder: "https://drive.google.com/file/d/your-privacy.pdf",
+    type: "url",
+  },
 ];
 
 export default function SiteSettings() {

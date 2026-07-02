@@ -1,5 +1,7 @@
 import { useState } from "react";
 import { api } from "../api";
+import ConsentCheck from "../components/ConsentCheck";
+import { useSiteSettings } from "../context/SiteSettingsContext";
 
 const initialForm = {
   display_name: "", email: "", support_type: "not_sure",
@@ -10,6 +12,10 @@ export default function Help() {
   const [form, setForm] = useState(initialForm);
   const [submitted, setSubmitted] = useState(false);
   const [error, setError] = useState("");
+  const [consent, setConsent] = useState({ age: false, notCrisis: false, privacy: false });
+  const { settings } = useSiteSettings();
+
+  function setC(key, val) { setConsent(c => ({ ...c, [key]: val })); }
 
   function update(field, value) { setForm({ ...form, [field]: value }); }
 
@@ -130,6 +136,21 @@ export default function Help() {
               <div className="field">
                 <label>Preferred contact method and general availability</label>
                 <input value={form.availability} onChange={e => update("availability", e.target.value)} placeholder="e.g. email, evenings GMT+3" />
+              </div>
+
+              <div style={{ marginTop: "1.1rem", marginBottom: "0.5rem" }}>
+                <ConsentCheck checked={consent.age} onChange={v => setC("age", v)}>
+                  I confirm I am 13 years of age or older. If I am under 18, I have the consent of a parent or guardian to use Teen4Teen.
+                </ConsentCheck>
+                <ConsentCheck checked={consent.notCrisis} onChange={v => setC("notCrisis", v)}>
+                  I understand Teen4Teen provides peer support only — it is not a crisis service, therapy practice, or substitute for professional care.
+                </ConsentCheck>
+                <ConsentCheck checked={consent.privacy} onChange={v => setC("privacy", v)}>
+                  I agree to the collection and use of my information as described in the{" "}
+                  {settings.privacy_url
+                    ? <a href={settings.privacy_url} target="_blank" rel="noreferrer" style={{ color: "var(--pink-deep)", fontWeight: 600 }}>Privacy Policy</a>
+                    : <span style={{ color: "var(--gray)" }}>Privacy Policy <em>(coming soon)</em></span>}.
+                </ConsentCheck>
               </div>
 
               <button type="submit" className="btn btn-primary" style={{ width: "100%", justifyContent: "center" }}>Send request</button>

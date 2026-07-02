@@ -1,5 +1,7 @@
 import { useEffect, useState } from "react";
 import { api } from "../api";
+import ConsentCheck from "../components/ConsentCheck";
+import { useSiteSettings } from "../context/SiteSettingsContext";
 
 const TOPICS = ["General", "Anxiety", "Self-Worth", "Grief", "Relationships", "Identity", "Healing"];
 
@@ -28,6 +30,8 @@ export default function Community({ volunteerToken, volunteerInfo }) {
   const [newPost, setNewPost] = useState("");
   const [replyDrafts, setReplyDrafts] = useState({});
   const [loading, setLoading] = useState(true);
+  const [communityConsent, setCommunityConsent] = useState(false);
+  const { settings } = useSiteSettings();
 
   useEffect(() => {
     api.listPosts().then(d => setPosts(d.posts)).finally(() => setLoading(false));
@@ -36,6 +40,7 @@ export default function Community({ volunteerToken, volunteerInfo }) {
   async function submitPost(e) {
     e.preventDefault();
     if (!newPost.trim()) return;
+    if (!isApprovedVolunteer && !communityConsent) return;
     const { post } = await api.createPost({
       display_name: displayName.trim() || "anonymous",
       content: newPost.trim(),
@@ -109,6 +114,14 @@ export default function Community({ volunteerToken, volunteerInfo }) {
             <textarea rows={3} value={newPost} onChange={e => setNewPost(e.target.value)} placeholder="Share what you're going through, or ask for advice..." />
             <span className="field-hint">Please don't share personal identifying information.</span>
           </div>
+          {!isApprovedVolunteer && (
+            <ConsentCheck checked={communityConsent} onChange={setCommunityConsent}>
+              I confirm I am 13 or older and understand this is a peer support space — not professional mental health advice. I have read the{" "}
+              {settings.privacy_url
+                ? <a href={settings.privacy_url} target="_blank" rel="noreferrer" style={{ color: "var(--pink-deep)", fontWeight: 600 }}>Privacy Policy</a>
+                : <span style={{ color: "var(--gray)" }}>Privacy Policy <em>(coming soon)</em></span>}.
+            </ConsentCheck>
+          )}
           <button type="submit" className="btn btn-primary" style={{ width: "100%", justifyContent: "center" }}>Post</button>
         </form>
       </div>

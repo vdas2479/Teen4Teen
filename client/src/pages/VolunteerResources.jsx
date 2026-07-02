@@ -1,6 +1,8 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { api } from "../api";
+import ConsentCheck from "../components/ConsentCheck";
+import { useSiteSettings } from "../context/SiteSettingsContext";
 
 const initialForm = {
   name: "", email: "", country: "", age_range: "18_plus",
@@ -13,6 +15,10 @@ export default function VolunteerResources() {
   const [form, setForm] = useState(initialForm);
   const [submitted, setSubmitted] = useState(false);
   const [error, setError] = useState("");
+  const [consent, setConsent] = useState({ age: false, peer: false, ai: false, terms: false, privacy: false });
+  const { settings } = useSiteSettings();
+
+  function setC(key, val) { setConsent(c => ({ ...c, [key]: val })); }
 
   useEffect(() => { api.listWorkshops().then(d => setWorkshops(d.workshops)); }, []);
 
@@ -135,6 +141,31 @@ export default function VolunteerResources() {
               </div>
               <div className="field"><label>Languages spoken</label><input value={form.languages} onChange={e => update("languages", e.target.value)} placeholder="e.g. English, Spanish" /></div>
               <div className="field"><label>Why do you want to volunteer with Teen4Teen?</label><textarea rows={3} value={form.motivation} onChange={e => update("motivation", e.target.value)} /></div>
+
+              <div style={{ marginTop: "1.2rem", marginBottom: "0.5rem" }}>
+                <p style={{ fontWeight: 700, fontSize: "0.88rem", marginBottom: "0.6rem" }}>Before you apply, please confirm:</p>
+                <ConsentCheck checked={consent.age} onChange={v => setC("age", v)}>
+                  I confirm I am {form.age_range === "13_17" ? "13 years of age or older" : "18 years of age or older"}.
+                </ConsentCheck>
+                <ConsentCheck checked={consent.peer} onChange={v => setC("peer", v)}>
+                  I understand Teen4Teen is a peer support platform, not a clinical or crisis service.
+                </ConsentCheck>
+                <ConsentCheck checked={consent.ai} onChange={v => setC("ai", v)}>
+                  I understand my application may include an AI-powered practice session for evaluation purposes.
+                </ConsentCheck>
+                <ConsentCheck checked={consent.terms} onChange={v => setC("terms", v)}>
+                  I agree to the{" "}
+                  {settings.terms_url
+                    ? <a href={settings.terms_url} target="_blank" rel="noreferrer" style={{ color: "var(--pink-deep)", fontWeight: 600 }}>Terms of Service</a>
+                    : <span style={{ color: "var(--gray)" }}>Terms of Service <em>(coming soon)</em></span>}.
+                </ConsentCheck>
+                <ConsentCheck checked={consent.privacy} onChange={v => setC("privacy", v)}>
+                  I agree to the{" "}
+                  {settings.privacy_url
+                    ? <a href={settings.privacy_url} target="_blank" rel="noreferrer" style={{ color: "var(--pink-deep)", fontWeight: 600 }}>Privacy Policy</a>
+                    : <span style={{ color: "var(--gray)" }}>Privacy Policy <em>(coming soon)</em></span>}.
+                </ConsentCheck>
+              </div>
 
               <button type="submit" className="btn btn-primary" style={{ width: "100%", justifyContent: "center" }}>Submit application</button>
             </form>

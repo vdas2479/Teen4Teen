@@ -190,7 +190,9 @@ const DEFAULT_SETTINGS = {
   instagram_url: "https://www.instagram.com/t4t.international?igsh=ZXh5NnhleTl3ejVo&utm_source=qr",
   tiktok_url: "https://www.tiktok.com/@t4t.international",
   discord_url: "https://discord.gg/3WRC3AauS",
-  youtube_url: "https://youtube.com/@t4t.international?si=uBrld5cex-HaGEGE"
+  youtube_url: "https://youtube.com/@t4t.international?si=uBrld5cex-HaGEGE",
+  terms_url: "",
+  privacy_url: ""
 };
 
 export async function getSettings() {

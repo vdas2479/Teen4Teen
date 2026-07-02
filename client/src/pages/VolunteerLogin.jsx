@@ -1,6 +1,8 @@
 import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { api } from "../api";
+import ConsentCheck from "../components/ConsentCheck";
+import { useSiteSettings } from "../context/SiteSettingsContext";
 
 export default function VolunteerLogin({ onLogin }) {
   const [mode, setMode] = useState("login");
@@ -9,13 +11,18 @@ export default function VolunteerLogin({ onLogin }) {
   const [password2, setPassword2] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [consentTerms, setConsentTerms] = useState(false);
+  const [consentPrivacy, setConsentPrivacy] = useState(false);
   const navigate = useNavigate();
+  const { settings } = useSiteSettings();
 
   function switchMode(next) {
     setMode(next);
     setError("");
     setPassword("");
     setPassword2("");
+    setConsentTerms(false);
+    setConsentPrivacy(false);
   }
 
   async function handleSubmit(e) {
@@ -134,6 +141,23 @@ export default function VolunteerLogin({ onLogin }) {
               onChange={e => setPassword2(e.target.value)}
               placeholder="Confirm your password"
             />
+          </div>
+        )}
+
+        {mode === "register" && (
+          <div style={{ marginTop: "0.8rem", marginBottom: "0.4rem" }}>
+            <ConsentCheck checked={consentTerms} onChange={setConsentTerms}>
+              I agree to the{" "}
+              {settings.terms_url
+                ? <a href={settings.terms_url} target="_blank" rel="noreferrer" style={{ color: "var(--pink-deep)", fontWeight: 600 }}>Terms of Service</a>
+                : <span style={{ color: "var(--gray)" }}>Terms of Service <em>(coming soon)</em></span>}.
+            </ConsentCheck>
+            <ConsentCheck checked={consentPrivacy} onChange={setConsentPrivacy}>
+              I agree to the{" "}
+              {settings.privacy_url
+                ? <a href={settings.privacy_url} target="_blank" rel="noreferrer" style={{ color: "var(--pink-deep)", fontWeight: 600 }}>Privacy Policy</a>
+                : <span style={{ color: "var(--gray)" }}>Privacy Policy <em>(coming soon)</em></span>}.
+            </ConsentCheck>
           </div>
         )}
 
