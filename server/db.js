@@ -183,3 +183,32 @@ export async function getOne(table, id) {
 }
 
 export const mode = USING_SUPABASE ? "supabase" : "local-json";
+
+// ── Site settings (single-document) ───────────────────────────────────────
+const DEFAULT_SETTINGS = {
+  logo_url: "",
+  instagram_url: "https://www.instagram.com/t4t.international?igsh=ZXh5NnhleTl3ejVo&utm_source=qr",
+  tiktok_url: "https://www.tiktok.com/@t4t.international",
+  discord_url: "https://discord.gg/3WRC3AauS",
+  youtube_url: "https://youtube.com/@t4t.international?si=uBrld5cex-HaGEGE"
+};
+
+export async function getSettings() {
+  if (USING_SUPABASE) {
+    const { data } = await supabase.from("site_settings").select("*").eq("id", "main").maybeSingle();
+    return { ...DEFAULT_SETTINGS, ...(data || {}) };
+  }
+  const data = readLocal();
+  return { ...DEFAULT_SETTINGS, ...(data.site_settings || {}) };
+}
+
+export async function updateSettings(patch) {
+  if (USING_SUPABASE) {
+    const { data } = await supabase.from("site_settings").upsert({ id: "main", ...patch }).select().single();
+    return data;
+  }
+  const data = readLocal();
+  data.site_settings = { ...(data.site_settings || DEFAULT_SETTINGS), ...patch };
+  writeLocal(data);
+  return data.site_settings;
+}

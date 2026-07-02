@@ -16,6 +16,7 @@ import meetingRequestsRouter from "./routes/meetingRequests.js";
 import chatsRouter from "./routes/chats.js";
 import adminChatsRouter from "./routes/adminChats.js";
 import adminRouter from "./routes/admin.js";
+import settingsRouter from "./routes/settings.js";
 import { mode } from "./db.js";
 
 dotenv.config();
@@ -41,6 +42,7 @@ app.use("/api/meeting-requests", meetingRequestsRouter);
 app.use("/api/chats", chatsRouter);
 app.use("/api/admin-chats", adminChatsRouter);
 app.use("/api/admin", adminRouter);
+app.use("/api/settings", settingsRouter);
 
 const clientDistPath = path.join(__dirname, "..", "client", "dist");
 

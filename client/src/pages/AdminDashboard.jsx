@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useSiteSettings } from "../context/SiteSettingsContext";
 import Overview from "./admin/Overview";
 import ApplicationInbox from "./admin/ApplicationInbox";
 import OnboardingTracker from "./admin/OnboardingTracker";
@@ -8,6 +9,7 @@ import CommunityModerator from "./admin/CommunityModerator";
 import VideoManager from "./admin/VideoManager";
 import WorkshopManager from "./admin/WorkshopManager";
 import VolunteerInbox from "./admin/VolunteerInbox";
+import SiteSettings from "./admin/SiteSettings";
 
 const TABS = {
   overview: ["Overview", "📊", Overview],
@@ -18,11 +20,14 @@ const TABS = {
   videos: ["Video Manager", "🎬", VideoManager],
   workshops: ["Workshop Manager", "🗓️", WorkshopManager],
   volunteerInbox: ["Volunteer Inbox", "✉️", VolunteerInbox],
+  siteSettings: ["Site Settings", "⚙️", SiteSettings],
 };
 
 export default function AdminDashboard({ adminEmail, onLogout }) {
   const [tab, setTab] = useState("overview");
   const navigate = useNavigate();
+  const { settings } = useSiteSettings();
+  const logoSrc = settings.logo_url || "/logo.png";
   const [, , Component] = TABS[tab];
 
   function logout() {
@@ -38,7 +43,7 @@ export default function AdminDashboard({ adminEmail, onLogout }) {
             width: 34, height: 34, borderRadius: "50%", overflow: "hidden",
             display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0
           }}>
-            <img src="/logo.png" alt="Teen4Teen" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+            <img src={logoSrc} alt="Teen4Teen" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
           </span>
           <span style={{ fontFamily: "var(--font-display)", fontWeight: 600 }}>Admin</span>
         </div>

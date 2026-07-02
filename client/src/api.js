@@ -89,4 +89,8 @@ export const api = {
   // Admin
   login: (email, password) => request("/admin/login", { method: "POST", body: JSON.stringify({ email, password }) }),
   overview: () => request("/admin/overview"),
+
+  // Site settings
+  getSettings: () => request("/settings"),
+  updateSettings: (patch) => request("/settings", { method: "PATCH", body: JSON.stringify(patch) }),
 };

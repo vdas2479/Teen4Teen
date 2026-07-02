@@ -1,8 +1,11 @@
 import { useState } from "react";
 import { Link, NavLink } from "react-router-dom";
+import { useSiteSettings } from "../context/SiteSettingsContext";
 
 export default function NavBar({ volunteerInfo, onVolunteerLogout }) {
   const [logoOpen, setLogoOpen] = useState(false);
+  const { settings } = useSiteSettings();
+  const logoSrc = settings.logo_url || "/logo.png";
 
   return (
     <>
@@ -18,7 +21,7 @@ export default function NavBar({ volunteerInfo, onVolunteerLogout }) {
           }}
         >
           <img
-            src="/logo.png"
+            src={logoSrc}
             alt="Teen4Teen logo"
             onClick={e => e.stopPropagation()}
             style={{
@@ -63,7 +66,7 @@ export default function NavBar({ volunteerInfo, onVolunteerLogout }) {
               flexShrink: 0, boxShadow: "0 2px 8px rgba(219,39,119,0.25)"
             }}
           >
-            <img src="/logo.png" alt="Teen4Teen" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+            <img src={logoSrc} alt="Teen4Teen" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
           </button>
           <Link to="/" style={{ fontFamily: "var(--font-display)", fontSize: "1.3rem", fontWeight: 600, color: "var(--ink)", textDecoration: "none" }}>
             Teen4Teen
