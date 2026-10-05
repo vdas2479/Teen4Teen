@@ -9,11 +9,11 @@
 
 export const LEGAL_CONFIG = {
   // The date these terms take effect, e.g. "July 1, 2026".
-  effectiveDate: "",
+  effectiveDate: "July 1,2026",
 
   // The Kentucky county whose courts handle disputes, e.g. "Fayette County".
   // The lawyer listed Fayette only as an example — confirm with her first.
-  venueCounty: "",
+  venueCounty: "Fayette County",
 
   // How a parent/guardian actually proves consent for a 13–17 user.
   // The lawyer flagged that wording alone does not satisfy COPPA — this

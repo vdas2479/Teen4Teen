@@ -107,6 +107,27 @@ create table admins (
   created_at timestamptz default now()
 );
 
+-- Audit trail of what each person was shown and agreed to, captured at the
+-- moment they submitted. Deliberately has no foreign key and no cascade: the
+-- record of a consent must outlive the account it came from, otherwise
+-- deleting a volunteer would destroy the evidence that they ever consented.
+-- subject_id is text, not uuid, so the same column works in local-JSON mode
+-- (nanoid ids) and Supabase mode (uuids).
+create table consent_records (
+  id uuid primary key default gen_random_uuid(),
+  subject_type text not null, -- 'volunteer' | 'meeting_request' | 'community_post'
+  subject_id text,
+  email text,
+  consent_text text not null, -- verbatim wording the user saw and ticked
+  terms_version text,         -- Terms effective date in force at the time
+  ip_address text,
+  user_agent text,
+  created_at timestamptz default now()
+);
+
+create index consent_records_subject_idx on consent_records (subject_type, subject_id);
+create index consent_records_email_idx on consent_records (email);
+
 -- ── Row Level Security ──────────────────────────────────────────────────
 -- The server talks to Supabase using the service_role key, which bypasses
 -- RLS entirely, so the API keeps working exactly as it does today.
@@ -121,6 +142,7 @@ alter table videos enable row level security;
 alter table workshops enable row level security;
 alter table meeting_requests enable row level security;
 alter table admins enable row level security;
+alter table consent_records enable row level security;
 
 -- Public, read-only access to content that's meant to be public:
 create policy "Public can read visible videos" on videos for select using (is_visible = true);

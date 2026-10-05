@@ -1,5 +1,6 @@
 import express from "express";
 import * as db from "../db.js";
+import { recordConsent } from "../consent.js";
 import { asyncHandler } from "../asyncHandler.js";
 
 const router = express.Router();
@@ -46,6 +47,13 @@ router.post("/posts", asyncHandler(async (req, res) => {
     moderator_note: null,
     replies: []
   });
+
+  // Approved volunteers post under their own verified tier and are never shown
+  // the tickbox, so there is nothing to record for them.
+  if (tier_label === "Seeker") {
+    await recordConsent(req, { subject_type: "community_post", subject_id: post.id, email: null });
+  }
+
   res.status(201).json({ post });
 }));
 

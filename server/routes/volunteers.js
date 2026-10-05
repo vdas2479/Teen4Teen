@@ -1,6 +1,7 @@
 import express from "express";
 import * as db from "../db.js";
 import { notifyAdmin, notifyVolunteer } from "../notify.js";
+import { recordConsent } from "../consent.js";
 import { asyncHandler } from "../asyncHandler.js";
 
 const router = express.Router();
@@ -33,6 +34,8 @@ router.post("/", asyncHandler(async (req, res) => {
     interview_completed: false,
     approved_at: null
   });
+
+  await recordConsent(req, { subject_type: "volunteer", subject_id: volunteer.id, email });
 
   await notifyAdmin(
     "New volunteer application",

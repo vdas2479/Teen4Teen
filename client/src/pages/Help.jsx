@@ -1,7 +1,8 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { api } from "../api";
 import ConsentCheck, { ConsentHint } from "../components/ConsentCheck";
 import PolicyLink from "../components/PolicyLink";
+import { LEGAL_CONFIG } from "../legalConfig";
 
 const initialForm = {
   display_name: "", email: "", support_type: "not_sure",
@@ -14,6 +15,7 @@ export default function Help() {
   const [error, setError] = useState("");
   const [consent, setConsent] = useState({ age: false, notCrisis: false, logging: false, privacy: false });
   const allConsented = Object.values(consent).every(Boolean);
+  const consentRef = useRef(null);
 
   function setC(key, val) { setConsent(c => ({ ...c, [key]: val })); }
 
@@ -24,7 +26,11 @@ export default function Help() {
     setError("");
     if (!allConsented) return;
     try {
-      await api.submitMeetingRequest(form);
+      await api.submitMeetingRequest({
+        ...form,
+        consent_text: consentRef.current?.innerText || "",
+        terms_version: LEGAL_CONFIG.effectiveDate
+      });
       setSubmitted(true);
     } catch (err) {
       setError(err.message);
@@ -139,7 +145,7 @@ export default function Help() {
                 <input value={form.availability} onChange={e => update("availability", e.target.value)} placeholder="e.g. email, evenings GMT+3" />
               </div>
 
-              <div style={{ marginTop: "1.1rem", marginBottom: "0.5rem" }}>
+              <div ref={consentRef} style={{ marginTop: "1.1rem", marginBottom: "0.5rem" }}>
                 <ConsentCheck checked={consent.age} onChange={v => setC("age", v)}>
                   I confirm I am 13 years of age or older. If I am under 18, I have the consent of a parent or guardian to use Teen4Teen.
                 </ConsentCheck>

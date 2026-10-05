@@ -1,7 +1,8 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { api } from "../api";
 import ConsentCheck, { ConsentHint } from "../components/ConsentCheck";
 import PolicyLink from "../components/PolicyLink";
+import { LEGAL_CONFIG } from "../legalConfig";
 
 const TOPICS = ["General", "Anxiety", "Self-Worth", "Grief", "Relationships", "Identity", "Healing"];
 
@@ -32,6 +33,7 @@ export default function Community({ volunteerToken, volunteerInfo }) {
   const [loading, setLoading] = useState(true);
   const [communityConsent, setCommunityConsent] = useState(false);
   const postBlocked = !isApprovedVolunteer && !communityConsent;
+  const consentRef = useRef(null);
 
   useEffect(() => {
     api.listPosts().then(d => setPosts(d.posts)).finally(() => setLoading(false));
@@ -45,7 +47,9 @@ export default function Community({ volunteerToken, volunteerInfo }) {
       display_name: displayName.trim() || "anonymous",
       content: newPost.trim(),
       country: country.trim() || null,
-      topic
+      topic,
+      consent_text: consentRef.current?.innerText || "",
+      terms_version: LEGAL_CONFIG.effectiveDate
     }, volunteerToken);
     setPosts([post, ...posts]);
     setNewPost("");
@@ -116,12 +120,14 @@ export default function Community({ volunteerToken, volunteerInfo }) {
           </div>
           {!isApprovedVolunteer && (
             <>
-              <ConsentCheck checked={communityConsent} onChange={setCommunityConsent}>
-                I confirm I am 13 or older and understand this is a peer support space — not
-                professional mental health advice. I understand my post is public, I will not
-                share personal identifying information, and I agree to the{" "}
-                <PolicyLink doc="terms" /> and <PolicyLink doc="privacy" />.
-              </ConsentCheck>
+              <div ref={consentRef}>
+                <ConsentCheck checked={communityConsent} onChange={setCommunityConsent}>
+                  I confirm I am 13 or older and understand this is a peer support space — not
+                  professional mental health advice. I understand my post is public, I will not
+                  share personal identifying information, and I agree to the{" "}
+                  <PolicyLink doc="terms" /> and <PolicyLink doc="privacy" />.
+                </ConsentCheck>
+              </div>
               <ConsentHint show={postBlocked} />
             </>
           )}

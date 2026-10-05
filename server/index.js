@@ -24,6 +24,11 @@ dotenv.config();
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const app = express();
 
+// Render (and Hostinger) put a proxy in front of this app, so without this
+// req.ip is the proxy's address rather than the visitor's — which would make
+// every IP in the consent audit trail identical and useless.
+app.set("trust proxy", 1);
+
 app.use(cors());
 app.use(express.json());
 

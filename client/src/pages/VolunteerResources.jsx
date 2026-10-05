@@ -1,8 +1,9 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { api } from "../api";
 import ConsentCheck, { ConsentHint } from "../components/ConsentCheck";
 import PolicyLink from "../components/PolicyLink";
+import { LEGAL_CONFIG } from "../legalConfig";
 
 const initialForm = {
   name: "", email: "", country: "", age_range: "18_plus",
@@ -17,6 +18,7 @@ export default function VolunteerResources() {
   const [error, setError] = useState("");
   const [consent, setConsent] = useState({ age: false, peer: false, ai: false, terms: false, privacy: false });
   const allConsented = Object.values(consent).every(Boolean);
+  const consentRef = useRef(null);
 
   function setC(key, val) { setConsent(c => ({ ...c, [key]: val })); }
 
@@ -29,7 +31,12 @@ export default function VolunteerResources() {
     setError("");
     if (!allConsented) return;
     try {
-      await api.submitVolunteerForm({ ...form, is_therapist: form.is_therapist === "yes" });
+      await api.submitVolunteerForm({
+        ...form,
+        is_therapist: form.is_therapist === "yes",
+        consent_text: consentRef.current?.innerText || "",
+        terms_version: LEGAL_CONFIG.effectiveDate
+      });
       setSubmitted(true);
     } catch (err) {
       setError(err.message);
@@ -143,7 +150,7 @@ export default function VolunteerResources() {
               <div className="field"><label>Languages spoken</label><input value={form.languages} onChange={e => update("languages", e.target.value)} placeholder="e.g. English, Spanish" /></div>
               <div className="field"><label>Why do you want to volunteer with Teen4Teen?</label><textarea rows={3} value={form.motivation} onChange={e => update("motivation", e.target.value)} /></div>
 
-              <div style={{ marginTop: "1.2rem", marginBottom: "0.5rem" }}>
+              <div ref={consentRef} style={{ marginTop: "1.2rem", marginBottom: "0.5rem" }}>
                 <p style={{ fontWeight: 700, fontSize: "0.88rem", marginBottom: "0.6rem" }}>Before you apply, please confirm:</p>
                 <ConsentCheck checked={consent.age} onChange={v => setC("age", v)}>
                   I confirm I am {form.age_range === "13_17" ? "13 years of age or older" : "18 years of age or older"}.

@@ -3,6 +3,7 @@ import crypto from "crypto";
 import * as db from "../db.js";
 import { rankVolunteers } from "../match.js";
 import { notifyAdmin, notifyVolunteer } from "../notify.js";
+import { recordConsent } from "../consent.js";
 import { asyncHandler } from "../asyncHandler.js";
 
 const router = express.Router();
@@ -16,6 +17,8 @@ router.post("/", asyncHandler(async (req, res) => {
     meeting_format: meeting_format || "chat",
     status: "New"
   });
+
+  await recordConsent(req, { subject_type: "meeting_request", subject_id: request.id, email });
 
   await notifyAdmin(
     "New meeting request",
