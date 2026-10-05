@@ -48,7 +48,7 @@ export default function AdminLogin({ onLogin }) {
             Admin accounts are created by the super admin only — there's no public signup, by design.
           </p>
           <p style={{ fontSize: "0.72rem", color: "var(--gray-soft)", textAlign: "center", marginTop: "0.4rem" }}>
-            Dev mode default: admin@teen4teen.org / changeme123 (set in server/.env)
+            Dev mode default: midge2100@gmail.com / teen4teen (set in server/.env)
           </p>
         </div>
       </div>
