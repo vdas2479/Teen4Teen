@@ -14,8 +14,8 @@ router.post("/login", asyncHandler(async (req, res) => {
     return res.json({ token: data.session.access_token, email: data.user.email });
   }
 
-  const devEmail = process.env.DEV_ADMIN_EMAIL || "admin@teen4teen.org";
-  const devPassword = process.env.DEV_ADMIN_PASSWORD || "changeme123";
+  const devEmail = process.env.DEV_ADMIN_EMAIL || "midge2100@gmail.com";
+  const devPassword = process.env.DEV_ADMIN_PASSWORD || "teen4teen";
   if (email === devEmail && password === devPassword) {
     return res.json({ token: "dev-mode-token", email });
   }

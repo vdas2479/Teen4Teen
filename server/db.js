@@ -95,7 +95,7 @@ function seedData() {
     ],
     meeting_requests: [],
     admins: [
-      { id: nanoid(8), email: process.env.DEV_ADMIN_EMAIL || "admin@teen4teen.org", role: "super_admin", created_at: new Date().toISOString() }
+      { id: nanoid(8), email: process.env.DEV_ADMIN_EMAIL || "midge2100@gmail.com", role: "super_admin", created_at: new Date().toISOString() }
     ]
   };
 }
