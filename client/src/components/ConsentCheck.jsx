@@ -1,3 +1,18 @@
+// Shown when a form is blocked because required consent boxes are unticked.
+export function ConsentHint({ show }) {
+  if (!show) return null;
+  return (
+    <p style={{
+      fontSize: "0.82rem",
+      color: "var(--amber)",
+      fontWeight: 600,
+      margin: "0.1rem 0 0.7rem 0"
+    }}>
+      Please tick every box above to continue.
+    </p>
+  );
+}
+
 export default function ConsentCheck({ checked, onChange, children }) {
   return (
     <label style={{

@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { api } from "../api";
-import ConsentCheck from "../components/ConsentCheck";
-import { useSiteSettings } from "../context/SiteSettingsContext";
+import ConsentCheck, { ConsentHint } from "../components/ConsentCheck";
+import PolicyLink from "../components/PolicyLink";
 
 const initialForm = {
   display_name: "", email: "", support_type: "not_sure",
@@ -12,8 +12,8 @@ export default function Help() {
   const [form, setForm] = useState(initialForm);
   const [submitted, setSubmitted] = useState(false);
   const [error, setError] = useState("");
-  const [consent, setConsent] = useState({ age: false, notCrisis: false, privacy: false });
-  const { settings } = useSiteSettings();
+  const [consent, setConsent] = useState({ age: false, notCrisis: false, logging: false, privacy: false });
+  const allConsented = Object.values(consent).every(Boolean);
 
   function setC(key, val) { setConsent(c => ({ ...c, [key]: val })); }
 
@@ -22,6 +22,7 @@ export default function Help() {
   async function submit(e) {
     e.preventDefault();
     setError("");
+    if (!allConsented) return;
     try {
       await api.submitMeetingRequest(form);
       setSubmitted(true);
@@ -145,15 +146,20 @@ export default function Help() {
                 <ConsentCheck checked={consent.notCrisis} onChange={v => setC("notCrisis", v)}>
                   I understand Teen4Teen provides peer support only — it is not a crisis service, therapy practice, or substitute for professional care.
                 </ConsentCheck>
+                <ConsentCheck checked={consent.logging} onChange={v => setC("logging", v)}>
+                  I understand that my private chat will be recorded and stored, that other users
+                  cannot see it but platform administrators can, and that an administrator may
+                  review it if a safety concern or rule violation is reported.
+                </ConsentCheck>
                 <ConsentCheck checked={consent.privacy} onChange={v => setC("privacy", v)}>
                   I agree to the collection and use of my information as described in the{" "}
-                  {settings.privacy_url
-                    ? <a href={settings.privacy_url} target="_blank" rel="noreferrer" style={{ color: "var(--pink-deep)", fontWeight: 600 }}>Privacy Policy</a>
-                    : <span style={{ color: "var(--gray)" }}>Privacy Policy <em>(coming soon)</em></span>}.
+                  <PolicyLink doc="privacy" />, and to the <PolicyLink doc="terms" />.
                 </ConsentCheck>
               </div>
 
-              <button type="submit" className="btn btn-primary" style={{ width: "100%", justifyContent: "center" }}>Send request</button>
+              <ConsentHint show={!allConsented} />
+
+              <button type="submit" className="btn btn-primary" disabled={!allConsented} style={{ width: "100%", justifyContent: "center" }}>Send request</button>
             </form>
           )}
         </div>

@@ -1,3 +1,4 @@
+import { Link } from "react-router-dom";
 import { useSiteSettings } from "../context/SiteSettingsContext";
 
 const ICONS = {
@@ -69,6 +70,11 @@ export default function Footer() {
             <p style={{ margin: "0.4em 0 0 0" }}>
               <a href="/help" className="crisis-line">If you need immediate help, find support here →</a>
             </p>
+          </div>
+
+          <div style={{ display: "flex", gap: "1.1rem", flexWrap: "wrap", fontSize: "0.85rem" }}>
+            <Link to="/terms" style={{ color: "var(--gray)", fontWeight: 600 }}>Terms of Service</Link>
+            <Link to="/privacy" style={{ color: "var(--gray)", fontWeight: 600 }}>Privacy Policy</Link>
           </div>
         </div>
 

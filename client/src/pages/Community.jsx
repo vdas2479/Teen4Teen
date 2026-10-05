@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { api } from "../api";
-import ConsentCheck from "../components/ConsentCheck";
-import { useSiteSettings } from "../context/SiteSettingsContext";
+import ConsentCheck, { ConsentHint } from "../components/ConsentCheck";
+import PolicyLink from "../components/PolicyLink";
 
 const TOPICS = ["General", "Anxiety", "Self-Worth", "Grief", "Relationships", "Identity", "Healing"];
 
@@ -31,7 +31,7 @@ export default function Community({ volunteerToken, volunteerInfo }) {
   const [replyDrafts, setReplyDrafts] = useState({});
   const [loading, setLoading] = useState(true);
   const [communityConsent, setCommunityConsent] = useState(false);
-  const { settings } = useSiteSettings();
+  const postBlocked = !isApprovedVolunteer && !communityConsent;
 
   useEffect(() => {
     api.listPosts().then(d => setPosts(d.posts)).finally(() => setLoading(false));
@@ -40,7 +40,7 @@ export default function Community({ volunteerToken, volunteerInfo }) {
   async function submitPost(e) {
     e.preventDefault();
     if (!newPost.trim()) return;
-    if (!isApprovedVolunteer && !communityConsent) return;
+    if (postBlocked) return;
     const { post } = await api.createPost({
       display_name: displayName.trim() || "anonymous",
       content: newPost.trim(),
@@ -115,14 +115,17 @@ export default function Community({ volunteerToken, volunteerInfo }) {
             <span className="field-hint">Please don't share personal identifying information.</span>
           </div>
           {!isApprovedVolunteer && (
-            <ConsentCheck checked={communityConsent} onChange={setCommunityConsent}>
-              I confirm I am 13 or older and understand this is a peer support space — not professional mental health advice. I have read the{" "}
-              {settings.privacy_url
-                ? <a href={settings.privacy_url} target="_blank" rel="noreferrer" style={{ color: "var(--pink-deep)", fontWeight: 600 }}>Privacy Policy</a>
-                : <span style={{ color: "var(--gray)" }}>Privacy Policy <em>(coming soon)</em></span>}.
-            </ConsentCheck>
+            <>
+              <ConsentCheck checked={communityConsent} onChange={setCommunityConsent}>
+                I confirm I am 13 or older and understand this is a peer support space — not
+                professional mental health advice. I understand my post is public, I will not
+                share personal identifying information, and I agree to the{" "}
+                <PolicyLink doc="terms" /> and <PolicyLink doc="privacy" />.
+              </ConsentCheck>
+              <ConsentHint show={postBlocked} />
+            </>
           )}
-          <button type="submit" className="btn btn-primary" style={{ width: "100%", justifyContent: "center" }}>Post</button>
+          <button type="submit" className="btn btn-primary" disabled={postBlocked} style={{ width: "100%", justifyContent: "center" }}>Post</button>
         </form>
       </div>
 

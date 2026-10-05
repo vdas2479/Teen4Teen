@@ -14,6 +14,8 @@ import AdminLogin from "./pages/AdminLogin";
 import AdminDashboard from "./pages/AdminDashboard";
 import SeekerChat from "./pages/SeekerChat";
 import WorkshopDetail from "./pages/WorkshopDetail";
+import Terms from "./pages/Terms";
+import Privacy from "./pages/Privacy";
 
 function loadVolInfo() {
   try { return JSON.parse(sessionStorage.getItem("t4t_vol_info") || "null"); }
@@ -71,6 +73,8 @@ export default function App() {
           <Route path="/volunteer-dashboard" element={<VolunteerDashboard volunteerToken={volunteerToken} volunteerInfo={volunteerInfo} onLogout={handleVolunteerLogout} />} />
           <Route path="/chat/:token" element={<SeekerChat />} />
           <Route path="/workshop/:id" element={<WorkshopDetail />} />
+          <Route path="/terms" element={<Terms />} />
+          <Route path="/privacy" element={<Privacy />} />
 
           {/* Unlisted admin routes — never linked from public nav, per spec */}
           <Route path="/admin" element={adminToken ? <Navigate to="/admin/dashboard" /> : <AdminLogin onLogin={handleLogin} />} />

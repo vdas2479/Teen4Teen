@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { api } from "../api";
-import ConsentCheck from "../components/ConsentCheck";
-import { useSiteSettings } from "../context/SiteSettingsContext";
+import ConsentCheck, { ConsentHint } from "../components/ConsentCheck";
+import PolicyLink from "../components/PolicyLink";
 
 const initialForm = {
   name: "", email: "", country: "", age_range: "18_plus",
@@ -16,7 +16,7 @@ export default function VolunteerResources() {
   const [submitted, setSubmitted] = useState(false);
   const [error, setError] = useState("");
   const [consent, setConsent] = useState({ age: false, peer: false, ai: false, terms: false, privacy: false });
-  const { settings } = useSiteSettings();
+  const allConsented = Object.values(consent).every(Boolean);
 
   function setC(key, val) { setConsent(c => ({ ...c, [key]: val })); }
 
@@ -27,6 +27,7 @@ export default function VolunteerResources() {
   async function submit(e) {
     e.preventDefault();
     setError("");
+    if (!allConsented) return;
     try {
       await api.submitVolunteerForm({ ...form, is_therapist: form.is_therapist === "yes" });
       setSubmitted(true);
@@ -154,20 +155,18 @@ export default function VolunteerResources() {
                   I understand my application may include an AI-powered practice session for evaluation purposes.
                 </ConsentCheck>
                 <ConsentCheck checked={consent.terms} onChange={v => setC("terms", v)}>
-                  I agree to the{" "}
-                  {settings.terms_url
-                    ? <a href={settings.terms_url} target="_blank" rel="noreferrer" style={{ color: "var(--pink-deep)", fontWeight: 600 }}>Terms of Service</a>
-                    : <span style={{ color: "var(--gray)" }}>Terms of Service <em>(coming soon)</em></span>}.
+                  I have read and agree to the <PolicyLink doc="terms" />, including the rules on
+                  conduct, moderation, and chat logging.
                 </ConsentCheck>
                 <ConsentCheck checked={consent.privacy} onChange={v => setC("privacy", v)}>
-                  I agree to the{" "}
-                  {settings.privacy_url
-                    ? <a href={settings.privacy_url} target="_blank" rel="noreferrer" style={{ color: "var(--pink-deep)", fontWeight: 600 }}>Privacy Policy</a>
-                    : <span style={{ color: "var(--gray)" }}>Privacy Policy <em>(coming soon)</em></span>}.
+                  I agree to the collection and use of my information as described in the{" "}
+                  <PolicyLink doc="privacy" />.
                 </ConsentCheck>
               </div>
 
-              <button type="submit" className="btn btn-primary" style={{ width: "100%", justifyContent: "center" }}>Submit application</button>
+              <ConsentHint show={!allConsented} />
+
+              <button type="submit" className="btn btn-primary" disabled={!allConsented} style={{ width: "100%", justifyContent: "center" }}>Submit application</button>
             </form>
           )}
         </div>

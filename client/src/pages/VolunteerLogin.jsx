@@ -1,8 +1,8 @@
 import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { api } from "../api";
-import ConsentCheck from "../components/ConsentCheck";
-import { useSiteSettings } from "../context/SiteSettingsContext";
+import ConsentCheck, { ConsentHint } from "../components/ConsentCheck";
+import PolicyLink from "../components/PolicyLink";
 
 export default function VolunteerLogin({ onLogin }) {
   const [mode, setMode] = useState("login");
@@ -13,8 +13,10 @@ export default function VolunteerLogin({ onLogin }) {
   const [error, setError] = useState("");
   const [consentTerms, setConsentTerms] = useState(false);
   const [consentPrivacy, setConsentPrivacy] = useState(false);
+  const [consentLogging, setConsentLogging] = useState(false);
   const navigate = useNavigate();
-  const { settings } = useSiteSettings();
+
+  const registerBlocked = mode === "register" && !(consentTerms && consentPrivacy && consentLogging);
 
   function switchMode(next) {
     setMode(next);
@@ -23,11 +25,13 @@ export default function VolunteerLogin({ onLogin }) {
     setPassword2("");
     setConsentTerms(false);
     setConsentPrivacy(false);
+    setConsentLogging(false);
   }
 
   async function handleSubmit(e) {
     e.preventDefault();
     setError("");
+    if (registerBlocked) return;
     if (mode === "register" && password !== password2) {
       setError("passwords_mismatch");
       return;
@@ -147,21 +151,23 @@ export default function VolunteerLogin({ onLogin }) {
         {mode === "register" && (
           <div style={{ marginTop: "0.8rem", marginBottom: "0.4rem" }}>
             <ConsentCheck checked={consentTerms} onChange={setConsentTerms}>
-              I agree to the{" "}
-              {settings.terms_url
-                ? <a href={settings.terms_url} target="_blank" rel="noreferrer" style={{ color: "var(--pink-deep)", fontWeight: 600 }}>Terms of Service</a>
-                : <span style={{ color: "var(--gray)" }}>Terms of Service <em>(coming soon)</em></span>}.
+              I have read and agree to the <PolicyLink doc="terms" />, including the rules on
+              conduct, moderation, and my responsibilities as a volunteer.
             </ConsentCheck>
             <ConsentCheck checked={consentPrivacy} onChange={setConsentPrivacy}>
-              I agree to the{" "}
-              {settings.privacy_url
-                ? <a href={settings.privacy_url} target="_blank" rel="noreferrer" style={{ color: "var(--pink-deep)", fontWeight: 600 }}>Privacy Policy</a>
-                : <span style={{ color: "var(--gray)" }}>Privacy Policy <em>(coming soon)</em></span>}.
+              I agree to the collection and use of my information as described in the{" "}
+              <PolicyLink doc="privacy" />.
             </ConsentCheck>
+            <ConsentCheck checked={consentLogging} onChange={setConsentLogging}>
+              I understand that all conversations I have on Teen4Teen, including private chats,
+              are recorded and stored, and that platform administrators may review them if a
+              safety concern or rule violation is reported.
+            </ConsentCheck>
+            <ConsentHint show={registerBlocked} />
           </div>
         )}
 
-        <button className="btn btn-primary" type="submit" disabled={loading} style={{ width: "100%", justifyContent: "center", marginTop: "0.4rem" }}>
+        <button className="btn btn-primary" type="submit" disabled={loading || registerBlocked} style={{ width: "100%", justifyContent: "center", marginTop: "0.4rem" }}>
           {loading ? "Please wait…" : mode === "login" ? "Sign in →" : "Create account →"}
         </button>
 
