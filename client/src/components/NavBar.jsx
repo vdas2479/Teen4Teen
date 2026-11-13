@@ -78,6 +78,7 @@ export default function NavBar({ volunteerInfo, onVolunteerLogout }) {
             ["/community", "Community"],
             ["/podcast", "Podcast"],
             ["/volunteer", "Volunteer"],
+            ["/chapter", "Chapter"],
             ["/help", "Help"],
           ].map(([to, label]) => (
             <NavLink

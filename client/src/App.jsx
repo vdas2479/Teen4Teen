@@ -6,6 +6,7 @@ import Home from "./pages/Home";
 import Community from "./pages/Community";
 import Podcast from "./pages/Podcast";
 import VolunteerResources from "./pages/VolunteerResources";
+import Chapter from "./pages/Chapter";
 import Help from "./pages/Help";
 import Onboarding from "./pages/Onboarding";
 import VolunteerLogin from "./pages/VolunteerLogin";
@@ -67,6 +68,7 @@ export default function App() {
           <Route path="/community" element={<Community volunteerToken={volunteerToken} volunteerInfo={volunteerInfo} />} />
           <Route path="/podcast" element={<Podcast />} />
           <Route path="/volunteer" element={<VolunteerResources />} />
+          <Route path="/chapter" element={<Chapter />} />
           <Route path="/help" element={<Help />} />
           <Route path="/onboarding" element={<Onboarding />} />
           <Route path="/volunteer-login" element={<VolunteerLogin onLogin={handleVolunteerLogin} />} />

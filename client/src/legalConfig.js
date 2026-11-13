@@ -9,7 +9,7 @@
 
 export const LEGAL_CONFIG = {
   // The date these terms take effect, e.g. "July 1, 2026".
-  effectiveDate: "July 1,2026",
+  effectiveDate: "July 1, 2026",
 
   // The Kentucky county whose courts handle disputes, e.g. "Fayette County".
   // The lawyer listed Fayette only as an example — confirm with her first.
