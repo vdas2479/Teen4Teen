@@ -51,8 +51,9 @@ export default function Help() {
               <span className="icon-circle">✉️</span>
               <h3 style={{ fontSize: "1.05rem", margin: 0 }}>Contact email</h3>
             </div>
-            <a href="mailto:hello@teen4teen.org">hello@teen4teen.org</a>
-            <p style={{ fontSize: "0.78rem", color: "var(--gray-soft)", margin: "0.4rem 0 0 0" }}>(placeholder — update before live launch)</p>
+            <a href="mailto:vedanshi.das@stu.fayette.kschools.us">vedanshi.das@stu.fayette.kschools.us</a>
+            <br />
+            <a href="mailto:seberina.lin@stu.fayette.kyschools.us">seberina.lin@stu.fayette.kyschools.us</a>
           </div>
 
           <div className="note-lock" style={{ marginTop: "1.2rem" }}>
