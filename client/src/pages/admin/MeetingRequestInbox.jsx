@@ -7,9 +7,20 @@ export default function MeetingRequestInbox() {
   const [loadingMatches, setLoadingMatches] = useState(null);
   const [chatLinks, setChatLinks] = useState({});
   const [copiedId, setCopiedId] = useState(null);
+  const [loadError, setLoadError] = useState("");
 
-  function load() { api.listMeetingRequests().then(d => setRequests(d.requests)); }
-  useEffect(load, []);
+  function load() {
+    setLoadError("");
+    api.listMeetingRequests()
+      .then(d => setRequests(d.requests))
+      .catch(error => setLoadError(`Could not load meeting requests: ${error.message}`));
+  }
+
+  useEffect(() => {
+    load();
+    const interval = setInterval(load, 10000);
+    return () => clearInterval(interval);
+  }, []);
 
   async function viewMatches(id) {
     setLoadingMatches(id);
@@ -38,7 +49,11 @@ export default function MeetingRequestInbox() {
 
   return (
     <div>
-      <h2>Meeting Request Inbox</h2>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: "0.8rem" }}>
+        <h2>Meeting Request Inbox</h2>
+        <button className="btn btn-ghost" style={{ fontSize: "0.8rem" }} onClick={load}>↻ Refresh</button>
+      </div>
+      {loadError && <p role="alert" style={{ color: "var(--pink-deep)" }}>{loadError}</p>}
       {requests.length === 0 && <p style={{ color: "var(--gray)" }}>No meeting requests yet.</p>}
 
       {requests.map(r => (

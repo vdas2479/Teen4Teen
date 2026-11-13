@@ -3,6 +3,7 @@ import * as db from "../db.js";
 import { notifyAdmin, notifyVolunteer } from "../notify.js";
 import { recordConsent } from "../consent.js";
 import { asyncHandler } from "../asyncHandler.js";
+import { requireAdmin } from "../adminAuth.js";
 
 const router = express.Router();
 
@@ -58,19 +59,36 @@ router.post("/", asyncHandler(async (req, res) => {
   res.status(201).json({ volunteer });
 }));
 
-router.get("/", asyncHandler(async (req, res) => {
+// Return only the status details an applicant needs to enter volunteer onboarding.
+router.get("/onboarding-lookup", asyncHandler(async (req, res) => {
+  const email = typeof req.query.email === "string" ? req.query.email.trim().toLowerCase() : "";
+  if (!email) return res.status(400).json({ error: "Email is required." });
+  const volunteers = await db.list("volunteers");
+  const volunteer = volunteers.find(v => v.email?.trim().toLowerCase() === email);
+  if (!volunteer) return res.json({ volunteer: null });
+  res.json({
+    volunteer: {
+      id: volunteer.id,
+      email: volunteer.email,
+      status: volunteer.status,
+      volunteer_tier: volunteer.volunteer_tier
+    }
+  });
+}));
+
+router.get("/", requireAdmin, asyncHandler(async (req, res) => {
   const filters = req.query.status ? { status: req.query.status } : {};
   const volunteers = await db.list("volunteers", filters);
   res.json({ volunteers });
 }));
 
-router.patch("/:id", asyncHandler(async (req, res) => {
+router.patch("/:id", requireAdmin, asyncHandler(async (req, res) => {
   const updated = await db.update("volunteers", req.params.id, req.body);
   if (!updated) return res.status(404).json({ error: "Volunteer not found." });
   res.json({ volunteer: updated });
 }));
 
-router.post("/:id/approve", asyncHandler(async (req, res) => {
+router.post("/:id/approve", requireAdmin, asyncHandler(async (req, res) => {
   const volunteer = await db.getOne("volunteers", req.params.id);
   if (!volunteer) return res.status(404).json({ error: "Volunteer not found." });
 
@@ -91,7 +109,7 @@ router.post("/:id/approve", asyncHandler(async (req, res) => {
   res.json({ volunteer: updated });
 }));
 
-router.delete("/:id", asyncHandler(async (req, res) => {
+router.delete("/:id", requireAdmin, asyncHandler(async (req, res) => {
   const volunteer = await db.getOne("volunteers", req.params.id);
   if (!volunteer) return res.status(404).json({ error: "Volunteer not found." });
   await db.remove("volunteers", req.params.id);
@@ -100,7 +118,7 @@ router.delete("/:id", asyncHandler(async (req, res) => {
   res.json({ deleted: true });
 }));
 
-router.post("/:id/schedule-interview", asyncHandler(async (req, res) => {
+router.post("/:id/schedule-interview", requireAdmin, asyncHandler(async (req, res) => {
   const { date, time, format, link_or_location, notes } = req.body;
   if (!date || !time) return res.status(400).json({ error: "Date and time are required." });
 

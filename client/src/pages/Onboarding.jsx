@@ -31,8 +31,7 @@ export default function Onboarding() {
   }, []);
 
   async function lookupByEmail(emailToFind) {
-    const { volunteers } = await api.listVolunteers();
-    const match = volunteers.find(v => v.email === emailToFind);
+    const { volunteer: match } = await api.lookupVolunteerOnboarding(emailToFind);
     if (!match) {
       alert("We couldn't find an application with that email. Make sure you've submitted the Volunteer Interest Form first.");
       return;

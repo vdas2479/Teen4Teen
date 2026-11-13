@@ -1,6 +1,7 @@
 import express from "express";
 import * as db from "../db.js";
 import { asyncHandler } from "../asyncHandler.js";
+import { requireAdmin } from "../adminAuth.js";
 
 const router = express.Router();
 
@@ -9,7 +10,7 @@ router.get("/", asyncHandler(async (req, res) => {
   res.json(settings);
 }));
 
-router.patch("/", asyncHandler(async (req, res) => {
+router.patch("/", requireAdmin, asyncHandler(async (req, res) => {
   const allowed = ["logo_url", "instagram_url", "tiktok_url", "discord_url", "youtube_url", "terms_url", "privacy_url"];
   const patch = {};
   for (const key of allowed) {

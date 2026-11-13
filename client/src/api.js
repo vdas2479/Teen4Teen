@@ -2,12 +2,24 @@ const BASE = "/api";
 
 async function request(path, options = {}) {
   const { headers: extra, ...rest } = options;
+  const adminToken = typeof sessionStorage === "undefined" ? null : sessionStorage.getItem("t4t_admin_token");
   const res = await fetch(`${BASE}${path}`, {
-    headers: { "Content-Type": "application/json", ...extra },
+    headers: {
+      "Content-Type": "application/json",
+      ...(adminToken ? { Authorization: `Bearer ${adminToken}` } : {}),
+      ...extra
+    },
     ...rest,
   });
   const data = await res.json().catch(() => ({}));
-  if (!res.ok) throw new Error(data.error || "Something went wrong.");
+  if (!res.ok) {
+    if (res.status === 401 && adminToken && window.location.pathname.startsWith("/admin") && path !== "/admin/login") {
+      sessionStorage.removeItem("t4t_admin_token");
+      sessionStorage.removeItem("t4t_admin_email");
+      window.location.assign("/admin");
+    }
+    throw new Error(data.error || "Something went wrong.");
+  }
   return data;
 }
 
@@ -18,12 +30,13 @@ function authHeader(token) {
 export const api = {
   // Volunteers
   submitVolunteerForm: (body) => request("/volunteers", { method: "POST", body: JSON.stringify(body) }),
+  lookupVolunteerOnboarding: (email) => request(`/volunteers/onboarding-lookup?email=${encodeURIComponent(email)}`),
   listVolunteers: (status) => request(`/volunteers${status ? `?status=${status}` : ""}`),
   updateVolunteer: (id, patch) => request(`/volunteers/${id}`, { method: "PATCH", body: JSON.stringify(patch) }),
   approveVolunteer: (id) => request(`/volunteers/${id}/approve`, { method: "POST" }),
   deleteVolunteer: (id) => request(`/volunteers/${id}`, { method: "DELETE" }),
   scheduleInterview: (id, body) => request(`/volunteers/${id}/schedule-interview`, { method: "POST", body: JSON.stringify(body) }),
-  getVolunteerMeetings: (volunteerId) => request(`/meeting-requests/volunteer/${volunteerId}`),
+  getVolunteerMeetings: (volunteerId, token) => request(`/meeting-requests/volunteer/${volunteerId}`, { headers: authHeader(token) }),
 
   // Onboarding
   getOnboarding: (volunteerId) => request(`/onboarding/${volunteerId}`),
@@ -78,6 +91,8 @@ export const api = {
   getVolunteerChats: (volToken) => request("/chats/by-volunteer", { headers: authHeader(volToken) }),
   getVolunteerChatMessages: (chatId, volToken) => request(`/chats/volunteer/${chatId}`, { headers: authHeader(volToken) }),
   sendVolunteerMessage: (chatId, body, volToken) => request(`/chats/volunteer/${chatId}/messages`, { method: "POST", body: JSON.stringify(body), headers: authHeader(volToken) }),
+  listSeekerChats: () => request("/chats/admin"),
+  updateSeekerChat: (chatId, status) => request(`/chats/admin/${chatId}`, { method: "PATCH", body: JSON.stringify({ status }) }),
 
   // Volunteer ↔ admin chat
   getMyAdminChat: (volToken) => request("/admin-chats/my", { headers: authHeader(volToken) }),

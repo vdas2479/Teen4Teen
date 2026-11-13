@@ -85,6 +85,11 @@ export default function SeekerChat() {
           📞 You requested a <strong>call session</strong>. Your volunteer will suggest available times here — just reply to let them know what works for you.
         </div>
       )}
+      {chat.status === "Closed" && (
+        <div className="note-soft" role="status" style={{ marginBottom: "1rem" }}>
+          This conversation has been closed by a Teen4Teen administrator. You can still read the messages above, but you can't send new messages.
+        </div>
+      )}
 
       {/* Chat area */}
       <div ref={scrollBoxRef} style={{
@@ -153,29 +158,31 @@ export default function SeekerChat() {
         })}
       </div>
 
-      <form onSubmit={send} style={{ display: "flex", gap: "0.6rem" }}>
-        <input
-          value={draft}
-          onChange={e => setDraft(e.target.value)}
-          placeholder="Type a message…"
-          style={{
-            flex: 1,
-            padding: "0.75em 1.1em",
-            borderRadius: 999,
-            border: "1.5px solid var(--lavender)",
-            fontSize: "0.93rem",
-            fontFamily: "var(--font-body)"
-          }}
-        />
-        <button
-          type="submit"
-          className="btn btn-primary"
-          disabled={sending || !draft.trim()}
-          style={{ flexShrink: 0 }}
-        >
-          {sending ? "…" : "Send"}
-        </button>
-      </form>
+      {chat.status !== "Closed" && (
+        <form onSubmit={send} style={{ display: "flex", gap: "0.6rem" }}>
+          <input
+            value={draft}
+            onChange={e => setDraft(e.target.value)}
+            placeholder="Type a message…"
+            style={{
+              flex: 1,
+              padding: "0.75em 1.1em",
+              borderRadius: 999,
+              border: "1.5px solid var(--lavender)",
+              fontSize: "0.93rem",
+              fontFamily: "var(--font-body)"
+            }}
+          />
+          <button
+            type="submit"
+            className="btn btn-primary"
+            disabled={sending || !draft.trim()}
+            style={{ flexShrink: 0 }}
+          >
+            {sending ? "…" : "Send"}
+          </button>
+        </form>
+      )}
 
       <p style={{ marginTop: "1.8rem", fontSize: "0.8rem", color: "var(--gray-soft)" }}>
         If you need immediate help, visit our{" "}

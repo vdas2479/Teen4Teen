@@ -95,8 +95,32 @@ create table meeting_requests (
   preferred_responder_type text, -- 'therapy' | 'peer' | 'either'
   notes text,
   availability text,
+  meeting_format text default 'chat',
   status text default 'New', -- New | Matched | In Progress | Closed
   matched_volunteer_id uuid references volunteers(id),
+  created_at timestamptz default now()
+);
+
+create table chats (
+  id uuid primary key default gen_random_uuid(),
+  meeting_request_id uuid references meeting_requests(id) on delete cascade,
+  volunteer_id uuid references volunteers(id),
+  seeker_name text,
+  seeker_email text,
+  meeting_format text default 'chat',
+  seeker_token text unique not null,
+  status text default 'Active', -- Active | Closed
+  closed_at timestamptz,
+  created_at timestamptz default now()
+);
+
+create table chat_messages (
+  id uuid primary key default gen_random_uuid(),
+  chat_id uuid references chats(id) on delete cascade,
+  sender_type text not null, -- seeker | volunteer
+  sender_name text,
+  content text not null,
+  proposed_call_time text,
   created_at timestamptz default now()
 );
 
@@ -141,6 +165,8 @@ alter table community_replies enable row level security;
 alter table videos enable row level security;
 alter table workshops enable row level security;
 alter table meeting_requests enable row level security;
+alter table chats enable row level security;
+alter table chat_messages enable row level security;
 alter table admins enable row level security;
 alter table consent_records enable row level security;
 

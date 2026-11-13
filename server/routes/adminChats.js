@@ -1,6 +1,7 @@
 import express from "express";
 import * as db from "../db.js";
 import { asyncHandler } from "../asyncHandler.js";
+import { requireAdmin } from "../adminAuth.js";
 
 const router = express.Router();
 
@@ -60,7 +61,7 @@ router.post("/my/messages", asyncHandler(async (req, res) => {
 }));
 
 // Admin: list all volunteer chat threads
-router.get("/", asyncHandler(async (req, res) => {
+router.get("/", requireAdmin, asyncHandler(async (req, res) => {
   const chats = await db.list("volunteer_admin_chats");
   const withCounts = await Promise.all(chats.map(async c => {
     const msgs = await db.list("volunteer_admin_messages", { chat_id: c.id });
@@ -70,7 +71,7 @@ router.get("/", asyncHandler(async (req, res) => {
 }));
 
 // Admin: get a specific thread + messages
-router.get("/:chatId", asyncHandler(async (req, res) => {
+router.get("/:chatId", requireAdmin, asyncHandler(async (req, res) => {
   const chat = await db.getOne("volunteer_admin_chats", req.params.chatId);
   if (!chat) return res.status(404).json({ error: "Chat not found." });
   const messages = await db.list("volunteer_admin_messages", { chat_id: chat.id });
@@ -79,7 +80,7 @@ router.get("/:chatId", asyncHandler(async (req, res) => {
 }));
 
 // Admin: reply to a thread
-router.post("/:chatId/reply", asyncHandler(async (req, res) => {
+router.post("/:chatId/reply", requireAdmin, asyncHandler(async (req, res) => {
   const { content } = req.body;
   if (!content?.trim()) return res.status(400).json({ error: "Message cannot be empty." });
 

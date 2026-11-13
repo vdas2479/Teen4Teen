@@ -61,6 +61,11 @@ function ChatPanel({ chat, volunteerToken }) {
           📞 Call session — use "Propose call time" below to suggest times to the seeker.
         </div>
       )}
+      {chat.status === "Closed" && (
+        <div className="note-soft" role="status" style={{ marginBottom: "0.8rem", fontSize: "0.83rem" }}>
+          This conversation has been closed by a Teen4Teen administrator. You can still read the messages, but you can't send new ones.
+        </div>
+      )}
 
       {/* Messages */}
       <div ref={scrollBoxRef} style={{
@@ -186,7 +191,7 @@ function ChatPanel({ chat, volunteerToken }) {
       )}
 
       {/* Message input row */}
-      {!callForm && (
+      {!callForm && chat.status !== "Closed" && (
         <form onSubmit={sendMessage} style={{ display: "flex", gap: "0.5rem", alignItems: "center" }}>
           <input
             value={draft}
@@ -344,7 +349,7 @@ export default function VolunteerDashboard({ volunteerToken, volunteerInfo, onLo
         setVolunteer(info);
         if (info.status === "Approved") {
           const [{ meetings }, { chats }] = await Promise.all([
-            api.getVolunteerMeetings(info.volunteer_id),
+            api.getVolunteerMeetings(info.volunteer_id, volunteerToken),
             api.getVolunteerChats(volunteerToken)
           ]);
           setMeetings(meetings);

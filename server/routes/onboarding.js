@@ -1,10 +1,11 @@
 import express from "express";
 import * as db from "../db.js";
 import { asyncHandler } from "../asyncHandler.js";
+import { requireAdmin } from "../adminAuth.js";
 
 const router = express.Router();
 
-router.get("/:volunteerId", asyncHandler(async (req, res) => {
+router.get("/:volunteerId", requireAdmin, asyncHandler(async (req, res) => {
   const rows = await db.list("onboarding_progress", { volunteer_id: req.params.volunteerId });
   res.json({ progress: rows[0] || null });
 }));

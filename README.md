@@ -13,7 +13,7 @@ without rebuilding anything.
 
 ```
 teen4teen/
-├── client/          React frontend (all 5 public tabs + admin dashboard)
+├── client/          React frontend (public tabs + admin dashboard)
 ├── server/          Node.js + Express backend (REST API)
 └── supabase/        SQL schema for when you're ready to move off local storage
 ```
@@ -46,11 +46,11 @@ This starts the site on `http://localhost:5173`.
 **3. Open `http://localhost:5173` in your browser.**
 
 **Admin dashboard:** go to `http://localhost:5173/admin` (this URL is never
-linked anywhere in the public navigation, per the spec). Default login:
-- Email: `admin@teen4teen.org`
-- Password: `changeme123`
-
-(Change these in `server/.env` any time.)
+linked anywhere in the public navigation, per the spec). Set `ADMIN_EMAIL`
+and `ADMIN_PASSWORD` in `server/.env` to choose the login. For local
+development only, the server has a fallback if those values are blank; it
+disables that fallback when `NODE_ENV=production`, so a deployment must set
+its own credentials.
 
 ---
 
@@ -68,6 +68,21 @@ are upgrades, not requirements.
 4. Paste them into `server/.env` as `SUPABASE_URL` and `SUPABASE_SERVICE_KEY`.
 5. Restart the server. It will automatically switch from the local JSON file
    to Supabase — nothing else changes, no code edits needed.
+
+For a live deployment, set `NODE_ENV=production`, `ADMIN_EMAIL`, and
+`ADMIN_PASSWORD` in the hosting dashboard. Use a unique password rather than
+the local-development fallback.
+
+If you already created your Supabase project with an earlier version of the
+schema, open **SQL Editor**, paste in
+`supabase/migrations/20261112_admin_chat_controls.sql`, and run it before
+deploying this version. This adds the tables and fields needed for private
+seeker chats and admin close/reopen controls.
+
+Additional Supabase Auth accounts can use the admin dashboard only after an
+admin adds their email to the `admins` table. Treat this list carefully:
+admins can review private seeker-volunteer conversations and other sensitive
+account information.
 
 ### Gemini API (real AI mock session, instead of the scripted demo)
 1. Go to [Google AI Studio](https://aistudio.google.com/app/apikey) and create
@@ -96,16 +111,17 @@ The codebase doesn't change for this — only where it's hosted.
 ## What's built vs. what's a placeholder
 
 **Fully working:**
-- All 5 public tabs (Home, Community, Podcast, Volunteer Resources, Help)
+- All 6 public tabs (Home, Community, Podcast, Volunteer Resources, Chapter, Help)
 - Two-tier community posting (Seekers + Verified/Young Responders), with
   flagging
 - Volunteer interest form → admin Application Inbox → status workflow
 - Orientation checklist → AI mock session (scripted demo until you add a
   Gemini key) → transcript saved for admin review
 - Meeting request form → automated match suggestions → admin approval
+- Private seeker-volunteer chat with an admin review screen and close/reopen controls
 - Full admin dashboard: Overview, Application Inbox, Onboarding Tracker,
-  Meeting Requests + Matching, Community Moderator, Video Manager, Workshop
-  Manager
+  Meeting Requests + Matching, Seeker Chats, Community Moderator, Video
+  Manager, Workshop Manager
 - Admin login (works locally today; swaps to real Supabase Auth automatically
   once Supabase is connected)
 

@@ -5,6 +5,7 @@ import { rankVolunteers } from "../match.js";
 import { notifyAdmin, notifyVolunteer } from "../notify.js";
 import { recordConsent } from "../consent.js";
 import { asyncHandler } from "../asyncHandler.js";
+import { requireAdmin } from "../adminAuth.js";
 
 const router = express.Router();
 
@@ -28,13 +29,13 @@ router.post("/", asyncHandler(async (req, res) => {
   res.status(201).json({ request });
 }));
 
-router.get("/", asyncHandler(async (req, res) => {
+router.get("/", requireAdmin, asyncHandler(async (req, res) => {
   const filters = req.query.status ? { status: req.query.status } : {};
   const requests = await db.list("meeting_requests", filters);
   res.json({ requests });
 }));
 
-router.get("/:id/matches", asyncHandler(async (req, res) => {
+router.get("/:id/matches", requireAdmin, asyncHandler(async (req, res) => {
   const request = await db.getOne("meeting_requests", req.params.id);
   if (!request) return res.status(404).json({ error: "Request not found." });
   const volunteers = await db.list("volunteers");
@@ -42,7 +43,7 @@ router.get("/:id/matches", asyncHandler(async (req, res) => {
   res.json({ suggestions });
 }));
 
-router.post("/:id/match", asyncHandler(async (req, res) => {
+router.post("/:id/match", requireAdmin, asyncHandler(async (req, res) => {
   const { volunteer_id } = req.body;
 
   const meetingReq = await db.getOne("meeting_requests", req.params.id);
@@ -61,7 +62,9 @@ router.post("/:id/match", asyncHandler(async (req, res) => {
     seeker_name: meetingReq.display_name || "Seeker",
     seeker_email: meetingReq.email,
     meeting_format: meetingReq.meeting_format || "chat",
-    seeker_token: seekerToken
+    seeker_token: seekerToken,
+    status: "Active",
+    closed_at: null
   });
 
   // Email the seeker their unique chat link
@@ -82,7 +85,7 @@ router.post("/:id/match", asyncHandler(async (req, res) => {
 
 // Admin convenience — fetch the chat link for an already-matched request
 // (useful while in Resend's sandbox mode, before a domain is verified).
-router.get("/:id/chat", asyncHandler(async (req, res) => {
+router.get("/:id/chat", requireAdmin, asyncHandler(async (req, res) => {
   const chats = await db.list("chats", { meeting_request_id: req.params.id });
   const chat = chats[0];
   if (!chat) return res.status(404).json({ error: "No chat exists for this request yet." });
@@ -90,13 +93,19 @@ router.get("/:id/chat", asyncHandler(async (req, res) => {
   res.json({ chat, chat_link: `${baseUrl}/chat/${chat.seeker_token}` });
 }));
 
-router.patch("/:id", asyncHandler(async (req, res) => {
+router.patch("/:id", requireAdmin, asyncHandler(async (req, res) => {
   const updated = await db.update("meeting_requests", req.params.id, req.body);
   if (!updated) return res.status(404).json({ error: "Request not found." });
   res.json({ request: updated });
 }));
 
 router.get("/volunteer/:volunteerId", asyncHandler(async (req, res) => {
+  const token = req.headers.authorization?.match(/^Bearer\s+(.+)$/i)?.[1]?.trim();
+  if (!token) return res.status(401).json({ error: "Not authorized." });
+  const volunteers = await db.list("volunteers");
+  const volunteer = volunteers.find(v => v.session_token === token && v.status === "Approved");
+  if (!volunteer) return res.status(401).json({ error: "Not authorized." });
+  if (volunteer.id !== req.params.volunteerId) return res.status(403).json({ error: "Not your meeting requests." });
   const meetings = await db.list("meeting_requests", { matched_volunteer_id: req.params.volunteerId });
   res.json({ meetings });
 }));

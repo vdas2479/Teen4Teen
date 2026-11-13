@@ -2,6 +2,7 @@ import express from "express";
 import * as db from "../db.js";
 import { supabase } from "../db.js";
 import { asyncHandler } from "../asyncHandler.js";
+import { createAdminSession, requireAdmin } from "../adminAuth.js";
 
 const router = express.Router();
 
@@ -35,26 +36,32 @@ router.post("/login", asyncHandler(async (req, res) => {
   // Override on the host (Render → Environment) with ADMIN_EMAIL /
   // ADMIN_PASSWORD. DEV_ADMIN_* are the older names, still honoured.
   const adminEmail =
-    process.env.ADMIN_EMAIL || process.env.DEV_ADMIN_EMAIL || "midge2100@gmail.com";
+    process.env.ADMIN_EMAIL || process.env.DEV_ADMIN_EMAIL ||
+    (process.env.NODE_ENV === "production" ? "" : "midge2100@gmail.com");
   const adminPassword =
-    process.env.ADMIN_PASSWORD || process.env.DEV_ADMIN_PASSWORD || "teen4teen";
+    process.env.ADMIN_PASSWORD || process.env.DEV_ADMIN_PASSWORD ||
+    (process.env.NODE_ENV === "production" ? "" : "teen4teen");
 
-  const emailMatches = email.trim().toLowerCase() === adminEmail.trim().toLowerCase();
+  const emailMatches = Boolean(adminEmail && adminPassword) &&
+    email.trim().toLowerCase() === adminEmail.trim().toLowerCase();
   if (emailMatches && password === adminPassword) {
-    return res.json({ token: "admin-session-token", email: adminEmail.trim().toLowerCase() });
+    return res.json({ token: createAdminSession(), email: adminEmail.trim().toLowerCase() });
   }
 
   // ── 2. Supabase Auth admins ────────────────────────────────────────────
   if (supabase) {
     const { data, error } = await supabase.auth.signInWithPassword({ email, password });
     if (error || !data?.session) return res.status(401).json(invalid);
+    const admins = await db.list("admins");
+    const isAdmin = admins.some(admin => admin.email?.trim().toLowerCase() === data.user.email?.trim().toLowerCase());
+    if (!isAdmin) return res.status(401).json(invalid);
     return res.json({ token: data.session.access_token, email: data.user.email });
   }
 
   return res.status(401).json(invalid);
 }));
 
-router.get("/overview", asyncHandler(async (req, res) => {
+router.get("/overview", requireAdmin, asyncHandler(async (req, res) => {
   const [volunteers, requests, posts] = await Promise.all([
     db.list("volunteers"),
     db.list("meeting_requests"),

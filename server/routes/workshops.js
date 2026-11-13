@@ -1,6 +1,7 @@
 import express from "express";
 import * as db from "../db.js";
 import { asyncHandler } from "../asyncHandler.js";
+import { requireAdmin } from "../adminAuth.js";
 
 const router = express.Router();
 
@@ -9,20 +10,20 @@ router.get("/", asyncHandler(async (req, res) => {
   res.json({ workshops: workshops.filter(w => w.is_visible !== false) });
 }));
 
-router.post("/", asyncHandler(async (req, res) => {
+router.post("/", requireAdmin, asyncHandler(async (req, res) => {
   const { title, date, time, format, location_or_link, description } = req.body;
   if (!title || !date) return res.status(400).json({ error: "Title and date are required." });
   const workshop = await db.insert("workshops", { title, date, time, format, location_or_link, description, is_visible: true });
   res.status(201).json({ workshop });
 }));
 
-router.patch("/:id", asyncHandler(async (req, res) => {
+router.patch("/:id", requireAdmin, asyncHandler(async (req, res) => {
   const updated = await db.update("workshops", req.params.id, req.body);
   if (!updated) return res.status(404).json({ error: "Workshop not found." });
   res.json({ workshop: updated });
 }));
 
-router.delete("/:id", asyncHandler(async (req, res) => {
+router.delete("/:id", requireAdmin, asyncHandler(async (req, res) => {
   await db.remove("workshops", req.params.id);
   const rsvps = await db.list("workshop_rsvps", { workshop_id: req.params.id });
   for (const r of rsvps) await db.remove("workshop_rsvps", r.id);
@@ -42,7 +43,7 @@ router.post("/:id/rsvp", asyncHandler(async (req, res) => {
   res.status(201).json({ rsvp });
 }));
 
-router.get("/:id/rsvps", asyncHandler(async (req, res) => {
+router.get("/:id/rsvps", requireAdmin, asyncHandler(async (req, res) => {
   const rsvps = await db.list("workshop_rsvps", { workshop_id: req.params.id });
   res.json({ rsvps, count: rsvps.length });
 }));

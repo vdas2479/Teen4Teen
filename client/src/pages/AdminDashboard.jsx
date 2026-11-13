@@ -5,6 +5,7 @@ import Overview from "./admin/Overview";
 import ApplicationInbox from "./admin/ApplicationInbox";
 import OnboardingTracker from "./admin/OnboardingTracker";
 import MeetingRequestInbox from "./admin/MeetingRequestInbox";
+import ChatReview from "./admin/ChatReview";
 import CommunityModerator from "./admin/CommunityModerator";
 import VideoManager from "./admin/VideoManager";
 import WorkshopManager from "./admin/WorkshopManager";
@@ -16,6 +17,7 @@ const TABS = {
   applications: ["Application Inbox", "📋", ApplicationInbox],
   onboarding: ["Onboarding Tracker", "🎓", OnboardingTracker],
   meetings: ["Meeting Requests + Matching", "💌", MeetingRequestInbox],
+  seekerChats: ["Seeker Chats", "🔎", ChatReview],
   community: ["Community Moderator", "💬", CommunityModerator],
   videos: ["Video Manager", "🎬", VideoManager],
   workshops: ["Workshop Manager", "🗓️", WorkshopManager],

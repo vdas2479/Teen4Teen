@@ -2,6 +2,7 @@ import express from "express";
 import * as db from "../db.js";
 import { recordConsent } from "../consent.js";
 import { asyncHandler } from "../asyncHandler.js";
+import { requireAdmin } from "../adminAuth.js";
 
 const router = express.Router();
 
@@ -24,7 +25,7 @@ router.get("/posts", asyncHandler(async (req, res) => {
 
 // Admin: get EVERY post, including hidden ones. Without this, hiding a
 // post from the admin dashboard would make it permanently inaccessible.
-router.get("/posts/all", asyncHandler(async (req, res) => {
+router.get("/posts/all", requireAdmin, asyncHandler(async (req, res) => {
   const posts = await db.list("community_posts");
   res.json({ posts });
 }));
@@ -93,13 +94,13 @@ router.post("/posts/:postId/flag", asyncHandler(async (req, res) => {
   res.json({ post: updated });
 }));
 
-router.patch("/posts/:postId/moderate", asyncHandler(async (req, res) => {
+router.patch("/posts/:postId/moderate", requireAdmin, asyncHandler(async (req, res) => {
   const updated = await db.update("community_posts", req.params.postId, req.body);
   if (!updated) return res.status(404).json({ error: "Post not found." });
   res.json({ post: updated });
 }));
 
-router.delete("/posts/:postId", asyncHandler(async (req, res) => {
+router.delete("/posts/:postId", requireAdmin, asyncHandler(async (req, res) => {
   await db.remove("community_posts", req.params.postId);
   res.json({ deleted: true });
 }));
